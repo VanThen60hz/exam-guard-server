@@ -1,19 +1,19 @@
 "use strict";
 const express = require("express");
-const accessController = require("../../controllers/access.controller");
+const UserController = require("../../controllers/user.controller");
 const { asyncHandler } = require("../../helpers/asyncHandler");
 const router = express.Router();
 
 // edit user
-router.patch("/user/:id", asyncHandler(accessController.updateUser));
+router.patch("/user/:id", asyncHandler(UserController.updateUser));
 
 // delete user
-router.delete("/user/:id", asyncHandler(accessController.deleteUser));
+router.delete("/user/:id", asyncHandler(UserController.deleteUser));
 
 // list users
-router.get("/users", asyncHandler(accessController.listUsers));
+router.get("/users", asyncHandler(UserController.listUsers));
 
 // search users
-router.get("/users/search", asyncHandler(accessController.searchUsers));
+router.get("/users/search", asyncHandler(UserController.searchUsers));
 
 module.exports = router;

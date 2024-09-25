@@ -7,9 +7,15 @@ const { createTokenPair } = require("../auth/authUtils");
 const { getInfoData } = require("../utils");
 const { BadRequestError, ConflictRequestError } = require("../core/error.response");
 const roles = require("../constants/roles");
-const { findByEmailOrUserName, updateUser, deleteUser, listUsers, searchUsers } = require("./user.service");
+const { findByEmailOrUserName, updateUser, deleteUser, listUsers, searchUsers } = require("../repositories/user.repository");
 
 class AccessService {
+    static logout = async (keyStore) => {
+        const delKey = await keyTokenService.removeKeyToken(keyStore._id);
+        console.log("Deleted Key: ", delKey);
+        return delKey;
+    };
+
     static login = async ({ email, password, refreshToken = null }) => {
         const foundUser = await findByEmailOrUserName(email);
         if (!foundUser) {
