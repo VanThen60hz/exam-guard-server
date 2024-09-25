@@ -7,7 +7,7 @@ const { createTokenPair } = require("../auth/authUtils");
 const { getInfoData } = require("../utils");
 const { BadRequestError, ConflictRequestError } = require("../core/error.response");
 const roles = require("../constants/roles");
-const { findByEmailOrUserName } = require("./user.service");
+const { findByEmailOrUserName, updateUser, deleteUser, listUsers, searchUsers } = require("./user.service");
 
 class AccessService {
     static login = async ({ email, password, refreshToken = null }) => {
@@ -104,25 +104,44 @@ class AccessService {
         }
     };
 
-    static editUser = async (userId, userData) => {
-        const updatedUser = await userModel.findByIdAndUpdate(userId, userData, { new: true });
+    static updateUser = async (userId, userData) => {
+        const updatedUser = await updateUser(userId, userData);
         if (!updatedUser) {
             throw new BadRequestError("User not found");
         }
-        return updatedUser;
+        return getInfoData({
+            fields: ["_id", "username", "name", "email", "role", "avatar", "gender", "ssn", "address", "phone_number", "createdAt", "updatedAt"],
+            object: updatedUser,
+        });
     };
 
     static deleteUser = async (userId) => {
-        const deletedUser = await userModel.findByIdAndDelete(userId);
+        const deletedUser = await deleteUser(userId);
         if (!deletedUser) {
             throw new BadRequestError("User not found");
         }
         return { message: "User deleted successfully" };
     };
 
-    static listUsers = async () => {
-        const users = await userModel.find().lean(); // Lấy tất cả người dùng
-        return users;
+    static listUsers = async (filter = {}) => {
+        const users = await listUsers(filter);
+        return users.map((user) =>
+            getInfoData({
+                fields: ["_id", "username", "name", "email", "role", "avatar", "gender", "ssn", "address", "phone_number", "createdAt", "updatedAt"],
+                object: user,
+            }),
+        );
+    };
+
+    static searchUsers = async (query) => {
+        const users = await searchUsers(query);
+
+        return users.map((user) =>
+            getInfoData({
+                fields: ["_id", "username", "name", "email", "role", "avatar", "gender", "ssn", "address", "phone_number", "createdAt", "updatedAt"],
+                object: user,
+            }),
+        );
     };
 }
 
