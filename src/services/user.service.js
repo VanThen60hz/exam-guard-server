@@ -10,7 +10,21 @@ class UserService {
             throw new BadRequestError("User not found");
         }
         return getInfoData({
-            fields: ["_id", "username", "name", "email", "role", "avatar", "gender", "ssn", "address", "phone_number", "createdAt", "updatedAt"],
+            fields: [
+                "_id",
+                "username",
+                "name",
+                "email",
+                "role",
+                "avatar",
+                "gender",
+                "ssn",
+                "address",
+                "phone_number",
+                "status",
+                "createdAt",
+                "updatedAt",
+            ],
             object: user,
         });
     };
@@ -21,7 +35,21 @@ class UserService {
             throw new BadRequestError("User not found");
         }
         return getInfoData({
-            fields: ["_id", "username", "name", "email", "role", "avatar", "gender", "ssn", "address", "phone_number", "createdAt", "updatedAt"],
+            fields: [
+                "_id",
+                "username",
+                "name",
+                "email",
+                "role",
+                "avatar",
+                "gender",
+                "ssn",
+                "address",
+                "phone_number",
+                "status",
+                "createdAt",
+                "updatedAt",
+            ],
             object: updatedUser,
         });
     };
@@ -38,7 +66,21 @@ class UserService {
         const users = await listUsers(filter, page, limit);
         return users.map((user) =>
             getInfoData({
-                fields: ["_id", "username", "name", "email", "role", "avatar", "gender", "ssn", "address", "phone_number", "createdAt", "updatedAt"],
+                fields: [
+                    "_id",
+                    "username",
+                    "name",
+                    "email",
+                    "role",
+                    "avatar",
+                    "gender",
+                    "ssn",
+                    "address",
+                    "phone_number",
+                    "status",
+                    "createdAt",
+                    "updatedAt",
+                ],
                 object: user,
             }),
         );
@@ -49,7 +91,21 @@ class UserService {
 
         return users.map((user) =>
             getInfoData({
-                fields: ["_id", "username", "name", "email", "role", "avatar", "gender", "ssn", "address", "phone_number", "createdAt", "updatedAt"],
+                fields: [
+                    "_id",
+                    "username",
+                    "name",
+                    "email",
+                    "role",
+                    "avatar",
+                    "gender",
+                    "ssn",
+                    "address",
+                    "phone_number",
+                    "status",
+                    "createdAt",
+                    "updatedAt",
+                ],
                 object: user,
             }),
         );

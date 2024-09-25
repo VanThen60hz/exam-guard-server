@@ -16,6 +16,7 @@ const userSchema = new Schema(
         ssn: { type: Number, required: true },
         address: { type: String },
         phone_number: { type: String, required: true },
+        status: { type: String, required: true, enum: ["ACTIVE", "INACTIVE", "SUSPENDED"], default: "INACTIVE" },
         createdAt: { type: Date, default: Date.now },
         updatedAt: { type: Date, default: Date.now },
     },

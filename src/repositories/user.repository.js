@@ -10,8 +10,9 @@ const selectFields = {
     avatar: 1,
     gender: 1,
     ssn: 1,
-    address: 1,
     phone_number: 1,
+    address: 1,
+    status: 1,
 };
 
 const findUserByUserId = async (userId, select = selectFields) => {
@@ -68,6 +69,7 @@ const searchUsers = async (query, page = 1, limit = 10) => {
                 { address: { $regex: query, $options: "i" } },
                 ...(isNumber ? [{ ssn: Number(query) }] : []),
                 { gender: { $regex: query, $options: "i" } },
+                { status: { $regex: query, $options: "i" } },
             ],
         })
         .skip(skip)

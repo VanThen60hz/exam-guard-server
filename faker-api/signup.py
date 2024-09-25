@@ -26,6 +26,8 @@ except (IndexError, ValueError):
 password = "securepassword123"
 
 # Hàm tạo User ngẫu nhiên
+
+
 def generate_random_user():
     return {
         "username": fake.user_name(),
@@ -35,12 +37,14 @@ def generate_random_user():
         "role": fake.random_element(elements=("TEACHER", "STUDENT", "ADMIN")),
         "gender": fake.random_element(elements=("MALE", "FEMALE")),
         "phone_number": fake.phone_number(),
-        "ssn": fake.random_number(digits=10)
+        "ssn": fake.random_number(digits=10),
+        "address": fake.address(),
+        "status": fake.random_element(elements=("ACTIVE", "INACTIVE", "SUSPENDED")),
     }
+
 
 # Gửi request với dữ liệu ngẫu nhiên
 for _ in range(num_requests):
     payload = json.dumps(generate_random_user())
     response = requests.post(url, headers=headers, data=payload)
     print(response.text)
-
