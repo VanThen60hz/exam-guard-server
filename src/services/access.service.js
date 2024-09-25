@@ -7,42 +7,9 @@ const { createTokenPair } = require("../auth/authUtils");
 const { getInfoData } = require("../utils");
 const { BadRequestError, ConflictRequestError } = require("../core/error.response");
 const roles = require("../constants/roles");
-const { findByEmailOrUserName, updateUser, deleteUser, listUsers, searchUsers } = require("../repositories/user.repository");
+const { findByEmailOrUserName } = require("../repositories/user.repository");
 
 class AccessService {
-    static logout = async (keyStore) => {
-        const delKey = await keyTokenService.removeKeyToken(keyStore._id);
-        console.log("Deleted Key: ", delKey);
-        return delKey;
-    };
-
-    static login = async ({ email, password, refreshToken = null }) => {
-        const foundUser = await findByEmailOrUserName(email);
-        if (!foundUser) {
-            throw new BadRequestError("User not registered");
-        }
-        const isMatch = await bcrypt.compare(password, foundUser.password);
-        if (!isMatch) {
-            throw new UnauthorizedError("Password is incorrect");
-        }
-        const privateKey = crypto.randomBytes(64).toString("hex");
-        const publicKey = crypto.randomBytes(64).toString("hex");
-        const tokens = await createTokenPair({ userId: foundUser._id, email }, publicKey, privateKey);
-        await keyTokenService.createKeyToken({
-            userId: foundUser._id,
-            refreshToken: tokens.refreshToken,
-            privateKey,
-            publicKey,
-        });
-        return {
-            user: getInfoData({
-                fields: ["_id", "username", "name", "email", "role", "avatar", "gender", "ssn", "address", "phone_number", "createdAt", "updatedAt"],
-                object: foundUser,
-            }),
-            tokens,
-        };
-    };
-
     static signUp = async ({ username, password, name, email, avatar, role, gender, ssn, address, phone_number }) => {
         // Step 1: Check if email exists
         const existingUser = await userModel.findOne({ email }).lean();
@@ -110,44 +77,37 @@ class AccessService {
         }
     };
 
-    static updateUser = async (userId, userData) => {
-        const updatedUser = await updateUser(userId, userData);
-        if (!updatedUser) {
-            throw new BadRequestError("User not found");
+    static login = async ({ email, password, refreshToken = null }) => {
+        const foundUser = await findByEmailOrUserName(email);
+        if (!foundUser) {
+            throw new BadRequestError("User not registered");
         }
-        return getInfoData({
-            fields: ["_id", "username", "name", "email", "role", "avatar", "gender", "ssn", "address", "phone_number", "createdAt", "updatedAt"],
-            object: updatedUser,
+        const isMatch = await bcrypt.compare(password, foundUser.password);
+        if (!isMatch) {
+            throw new UnauthorizedError("Password is incorrect");
+        }
+        const privateKey = crypto.randomBytes(64).toString("hex");
+        const publicKey = crypto.randomBytes(64).toString("hex");
+        const tokens = await createTokenPair({ userId: foundUser._id, email }, publicKey, privateKey);
+        await keyTokenService.createKeyToken({
+            userId: foundUser._id,
+            refreshToken: tokens.refreshToken,
+            privateKey,
+            publicKey,
         });
-    };
-
-    static deleteUser = async (userId) => {
-        const deletedUser = await deleteUser(userId);
-        if (!deletedUser) {
-            throw new BadRequestError("User not found");
-        }
-        return { message: "User deleted successfully" };
-    };
-
-    static listUsers = async (filter = {}) => {
-        const users = await listUsers(filter);
-        return users.map((user) =>
-            getInfoData({
+        return {
+            user: getInfoData({
                 fields: ["_id", "username", "name", "email", "role", "avatar", "gender", "ssn", "address", "phone_number", "createdAt", "updatedAt"],
-                object: user,
+                object: foundUser,
             }),
-        );
+            tokens,
+        };
     };
 
-    static searchUsers = async (query) => {
-        const users = await searchUsers(query);
-
-        return users.map((user) =>
-            getInfoData({
-                fields: ["_id", "username", "name", "email", "role", "avatar", "gender", "ssn", "address", "phone_number", "createdAt", "updatedAt"],
-                object: user,
-            }),
-        );
+    static logout = async (keyStore) => {
+        const delKey = await keyTokenService.removeKeyToken(keyStore._id);
+        console.log("Deleted Key: ", delKey);
+        return delKey;
     };
 }
 

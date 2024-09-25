@@ -5,6 +5,8 @@ const JWT = require("jsonwebtoken");
 const { asyncHandler } = require("../helpers/asyncHandler");
 const { UnauthorizedError, NotFoundError } = require("../core/error.response");
 const { findByUserId } = require("../services/keyToken.service");
+const { findUserByUserId } = require("../repositories/user.repository");
+const roles = require("../constants/roles");
 const HEADER = {
     API_KEY: "x-api-key",
     CLIENT_ID: "x-client-id",
@@ -58,7 +60,33 @@ const authentication = asyncHandler(async (req, res, next) => {
     }
 });
 
+const adminAuthentication = asyncHandler(async (req, res, next) => {
+    const userId = req.headers[HEADER.CLIENT_ID];
+    console.log("userId: ", userId);
+    if (!userId) throw new UnauthorizedError("Unauthorized");
+
+    const user = await findUserByUserId(userId);
+    console.log("user role: ", user.role);
+    if (user.role !== roles.ADMIN) throw new UnauthorizedError("Unauthorized");
+
+    console.log("userId: ", userId);
+    const keyStore = await findByUserId(userId);
+    if (!keyStore) throw new NotFoundError("Not found keyStore");
+    //3
+    const accessToken = req.headers[HEADER.AUTHORIZATION];
+    if (!accessToken) throw new UnauthorizedError("Unauthorized");
+    try {
+        const decodeUser = JWT.verify(accessToken, keyStore.publicKey);
+        if (userId !== decodeUser.userId) throw new UnauthorizedError("Invalid Token");
+        req.keyStore = keyStore;
+        return next();
+    } catch (error) {
+        throw new UnauthorizedError("Unauthorized");
+    }
+});
+
 module.exports = {
     createTokenPair,
     authentication,
+    adminAuthentication,
 };

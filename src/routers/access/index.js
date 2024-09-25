@@ -5,11 +5,11 @@ const { asyncHandler } = require("../../helpers/asyncHandler");
 const { authentication } = require("../../auth/authUtils");
 const router = express.Router();
 
+// // sign up
+// router.post("/signup", asyncHandler(accessController.signUp));
+
 //login
 router.post("/login", asyncHandler(accessController.login));
-
-// sign up
-router.post("/signup", asyncHandler(accessController.signUp));
 
 // authentication
 router.use(authentication);

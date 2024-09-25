@@ -14,6 +14,15 @@ const selectFields = {
     phone_number: 1,
 };
 
+const findUserByUserId = async (userId, select = selectFields) => {
+    return await userModel
+        .findOne({
+            _id: userId,
+        })
+        .select(select)
+        .lean();
+};
+
 const findByEmail = async (email, select = selectFields) => {
     return await userModel
         .findOne({
@@ -40,12 +49,13 @@ const deleteUser = async (userId) => {
     return await userModel.findByIdAndDelete(userId);
 };
 
-const listUsers = async (filter = {}) => {
-    return await userModel.find(filter).lean();
+const listUsers = async (filter = {}, page = 1, limit = 10) => {
+    const skip = (page - 1) * limit;
+    return await userModel.find(filter).skip(skip).limit(limit).lean();
 };
 
-const searchUsers = async (query) => {
-    // Kiểm tra xem query có phải là số hay không
+const searchUsers = async (query, page = 1, limit = 10) => {
+    const skip = (page - 1) * limit;
     const isNumber = !isNaN(query);
 
     return await userModel
@@ -56,15 +66,17 @@ const searchUsers = async (query) => {
                 { name: { $regex: query, $options: "i" } },
                 { phone_number: { $regex: query, $options: "i" } },
                 { address: { $regex: query, $options: "i" } },
-                // Tìm kiếm ssn chỉ khi query là số
                 ...(isNumber ? [{ ssn: Number(query) }] : []),
                 { gender: { $regex: query, $options: "i" } },
             ],
         })
+        .skip(skip)
+        .limit(limit)
         .lean();
 };
 
 module.exports = {
+    findUserByUserId,
     findByEmail,
     findByEmailOrUserName,
     updateUser,
