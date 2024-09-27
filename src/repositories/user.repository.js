@@ -10,8 +10,9 @@ const selectFields = {
     avatar: 1,
     gender: 1,
     ssn: 1,
-    address: 1,
     phone_number: 1,
+    address: 1,
+    status: 1,
 };
 
 const findUserByUserId = async (userId, select = selectFields) => {
@@ -57,6 +58,7 @@ const listUsers = async (filter = {}, page = 1, limit = 10) => {
 const searchUsers = async (query, page = 1, limit = 10) => {
     const skip = (page - 1) * limit;
     const isNumber = !isNaN(query);
+    const isDate = /^\d{4}-\d{2}-\d{2}$/.test(query);
 
     return await userModel
         .find({
@@ -68,6 +70,8 @@ const searchUsers = async (query, page = 1, limit = 10) => {
                 { address: { $regex: query, $options: "i" } },
                 ...(isNumber ? [{ ssn: Number(query) }] : []),
                 { gender: { $regex: query, $options: "i" } },
+                { status: { $regex: query, $options: "i" } },
+                ...(isDate ? [{ dob: query }, { createdAt: query }, { updatedAt: query }] : []),
             ],
         })
         .skip(skip)

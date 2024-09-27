@@ -5,12 +5,25 @@ const crypto = require("crypto");
 const keyTokenService = require("./keyToken.service");
 const { createTokenPair } = require("../auth/authUtils");
 const { getInfoData } = require("../utils");
-const { BadRequestError, ConflictRequestError } = require("../core/error.response");
+const { BadRequestError, ConflictRequestError, UnauthorizedError } = require("../core/error.response");
 const roles = require("../constants/roles");
 const { findByEmailOrUserName } = require("../repositories/user.repository");
 
 class AccessService {
-    static signUp = async ({ username, password, name, email, avatar, role, gender, ssn, address, phone_number }) => {
+    static signUp = async ({
+        username,
+        password,
+        name,
+        email,
+        avatar,
+        role,
+        gender,
+        ssn,
+        address,
+        phone_number,
+        dob,
+        status,
+    }) => {
         // Step 1: Check if email exists
         const existingUser = await userModel.findOne({ email }).lean();
         if (existingUser) {
@@ -40,6 +53,8 @@ class AccessService {
             ssn,
             address,
             phone_number,
+            dob,
+            status,
         });
 
         if (newUser) {
@@ -69,7 +84,22 @@ class AccessService {
 
             return {
                 user: getInfoData({
-                    fields: ["_id", "username", "name", "email", "role", "avatar", "gender", "ssn", "address", "phone_number", "createdAt", "updatedAt"],
+                    fields: [
+                        "_id",
+                        "username",
+                        "name",
+                        "email",
+                        "role",
+                        "avatar",
+                        "gender",
+                        "dob",
+                        "ssn",
+                        "address",
+                        "phone_number",
+                        "status",
+                        "createdAt",
+                        "updatedAt",
+                    ],
                     object: newUser,
                 }),
                 tokens,
@@ -77,8 +107,8 @@ class AccessService {
         }
     };
 
-    static login = async ({ email, password, refreshToken = null }) => {
-        const foundUser = await findByEmailOrUserName(email);
+    static login = async ({ usernameOrEmail, password, refreshToken = null }) => {
+        const foundUser = await findByEmailOrUserName(usernameOrEmail);
         if (!foundUser) {
             throw new BadRequestError("User not registered");
         }
@@ -86,9 +116,20 @@ class AccessService {
         if (!isMatch) {
             throw new UnauthorizedError("Password is incorrect");
         }
+
+        if (foundUser.status === "INACTIVE") {
+            throw new UnauthorizedError(
+                "Your account is not activated or has been temporarily disabled, please contact ADMIN.",
+            );
+        } else if (foundUser.status === "SUSPENDED") {
+            throw new UnauthorizedError(
+                "Your account suspended due to violations or suspicious behavior cannot be used until reviewed.",
+            );
+        }
+
         const privateKey = crypto.randomBytes(64).toString("hex");
         const publicKey = crypto.randomBytes(64).toString("hex");
-        const tokens = await createTokenPair({ userId: foundUser._id, email }, publicKey, privateKey);
+        const tokens = await createTokenPair({ userId: foundUser._id, email: foundUser.email }, publicKey, privateKey);
         await keyTokenService.createKeyToken({
             userId: foundUser._id,
             refreshToken: tokens.refreshToken,
@@ -97,7 +138,22 @@ class AccessService {
         });
         return {
             user: getInfoData({
-                fields: ["_id", "username", "name", "email", "role", "avatar", "gender", "ssn", "address", "phone_number", "createdAt", "updatedAt"],
+                fields: [
+                    "_id",
+                    "username",
+                    "name",
+                    "email",
+                    "role",
+                    "avatar",
+                    "gender",
+                    "dob",
+                    "ssn",
+                    "address",
+                    "phone_number",
+                    "status",
+                    "createdAt",
+                    "updatedAt",
+                ],
                 object: foundUser,
             }),
             tokens,
