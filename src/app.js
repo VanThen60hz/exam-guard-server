@@ -3,13 +3,14 @@ const express = require("express");
 const { default: helmet } = require("helmet");
 const morgan = require("morgan");
 const app = express();
+const cors = require("cors");
 
 // init middlewares
 app.use(express.json()); // Thêm middleware để phân tích cú pháp JSON
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(compression());
-
+app.use(cors());
 // init db
 require("./dbs/init.mongodb");
 
@@ -34,3 +35,6 @@ app.use((error, req, res, next) => {
 
 // handle error
 module.exports = app;
+
+/// TEST
+// const express = require("express");
