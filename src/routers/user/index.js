@@ -9,7 +9,7 @@ const router = express.Router();
 router.use(adminAuthentication);
 
 // sign up
-router.post("/create", asyncHandler(accessController.signUp));
+router.post("/user/create", asyncHandler(accessController.signUp));
 
 // find user by id
 router.get("/user/:id", asyncHandler(UserController.findUserById));
