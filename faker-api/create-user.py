@@ -7,11 +7,12 @@ import sys
 fake = Faker()
 
 # URL API
-url = "http://localhost:8000/v1/api/signup"
+url = "http://localhost:8000/v1/api/user/create"
 
 # Headers
 headers = {
-    'x-api-key': '06a6d40c2e8f2e3d9398406f15af1ccf841bcdc640dee4929dd6f6ec5710dd4498cc24533406dc6f5f76dce3331c4892e0a6cd34c99c5990805744ffd4563ea1',
+    'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NmY0MTMyYWYzMmVmNDI2YjBjOTE0ODQiLCJlbWFpbCI6Im5ndXllbnZhbmFkbWluQGV4YW1wbGUuY29tIiwiaWF0IjoxNzI3NDIyMDYwLCJleHAiOjE3Mjc1OTQ4NjB9.gKdM8w1dACrC6-auHQSJUBXTIgn0bMwR3gyHTtag5aY',
+    'x-client-id': '66f4132af32ef426b0c91484',
     'Content-Type': 'application/json'
 }
 
@@ -34,7 +35,8 @@ def generate_random_user():
         "name": fake.name(),
         "email": fake.email(),
         "password": password,
-        "role": fake.random_element(elements=("TEACHER", "STUDENT", "ADMIN")),
+        # "role": fake.random_element(elements=("TEACHER", "STUDENT", "ADMIN")),
+        "role": fake.random_element(elements=("STUDENT", "ADMIN")),
         "gender": fake.random_element(elements=("MALE", "FEMALE")),
         "dob": fake.date_of_birth(minimum_age=18, maximum_age=65).strftime("%Y-%m-%d"),
         "phone_number": fake.phone_number(),
