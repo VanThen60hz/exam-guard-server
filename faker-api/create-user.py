@@ -9,6 +9,9 @@ fake = Faker()
 # URL API
 url = "http://localhost:8000/v1/api/user/create"
 
+# thêm Authorization là accessToken của 1 user role ADMIN khi Login vào header
+# thêm x-client-id là _id của user role ADMIN khi Login vào header
+
 # Headers
 headers = {
     'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NmY0MTMyYWYzMmVmNDI2YjBjOTE0ODQiLCJlbWFpbCI6Im5ndXllbnZhbmFkbWluQGV4YW1wbGUuY29tIiwiaWF0IjoxNzI3NDIyMDYwLCJleHAiOjE3Mjc1OTQ4NjB9.gKdM8w1dACrC6-auHQSJUBXTIgn0bMwR3gyHTtag5aY',
