@@ -19,6 +19,7 @@ class UserService {
                 "avatar",
                 "gender",
                 "ssn",
+                "dob",
                 "address",
                 "phone_number",
                 "status",
@@ -44,6 +45,7 @@ class UserService {
                 "avatar",
                 "gender",
                 "ssn",
+                "dob",
                 "address",
                 "phone_number",
                 "status",
@@ -75,6 +77,7 @@ class UserService {
                     "avatar",
                     "gender",
                     "ssn",
+                    "dob",
                     "address",
                     "phone_number",
                     "status",
@@ -88,7 +91,6 @@ class UserService {
 
     static searchUsers = async (query, page, limit) => {
         const users = await searchUsers(query, page, limit);
-
         return users.map((user) =>
             getInfoData({
                 fields: [
@@ -100,6 +102,7 @@ class UserService {
                     "avatar",
                     "gender",
                     "ssn",
+                    "dob",
                     "address",
                     "phone_number",
                     "status",

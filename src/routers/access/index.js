@@ -6,7 +6,7 @@ const { authentication } = require("../../auth/authUtils");
 const router = express.Router();
 
 // // sign up
-// router.post("/signup", asyncHandler(accessController.signUp));
+router.post("/signup", asyncHandler(accessController.signUp));
 
 //login
 router.post("/login", asyncHandler(accessController.login));

@@ -21,6 +21,7 @@ class AccessService {
         ssn,
         address,
         phone_number,
+        dob,
         status,
     }) => {
         // Step 1: Check if email exists
@@ -52,6 +53,7 @@ class AccessService {
             ssn,
             address,
             phone_number,
+            dob,
             status,
         });
 
@@ -90,6 +92,7 @@ class AccessService {
                         "role",
                         "avatar",
                         "gender",
+                        "dob",
                         "ssn",
                         "address",
                         "phone_number",
@@ -104,8 +107,8 @@ class AccessService {
         }
     };
 
-    static login = async ({ email, password, refreshToken = null }) => {
-        const foundUser = await findByEmailOrUserName(email);
+    static login = async ({ usernameOrEmail, password, refreshToken = null }) => {
+        const foundUser = await findByEmailOrUserName(usernameOrEmail);
         if (!foundUser) {
             throw new BadRequestError("User not registered");
         }
@@ -118,7 +121,7 @@ class AccessService {
             throw new UnauthorizedError(
                 "Your account is not activated or has been temporarily disabled, please contact ADMIN.",
             );
-        } else if (user.status === "SUSPENDED") {
+        } else if (foundUser.status === "SUSPENDED") {
             throw new UnauthorizedError(
                 "Your account suspended due to violations or suspicious behavior cannot be used until reviewed.",
             );
@@ -126,7 +129,7 @@ class AccessService {
 
         const privateKey = crypto.randomBytes(64).toString("hex");
         const publicKey = crypto.randomBytes(64).toString("hex");
-        const tokens = await createTokenPair({ userId: foundUser._id, email }, publicKey, privateKey);
+        const tokens = await createTokenPair({ userId: foundUser._id, email: foundUser.email }, publicKey, privateKey);
         await keyTokenService.createKeyToken({
             userId: foundUser._id,
             refreshToken: tokens.refreshToken,
@@ -143,6 +146,7 @@ class AccessService {
                     "role",
                     "avatar",
                     "gender",
+                    "dob",
                     "ssn",
                     "address",
                     "phone_number",

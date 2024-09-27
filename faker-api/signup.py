@@ -36,6 +36,7 @@ def generate_random_user():
         "password": password,
         "role": fake.random_element(elements=("TEACHER", "STUDENT", "ADMIN")),
         "gender": fake.random_element(elements=("MALE", "FEMALE")),
+        "dob": fake.date_of_birth(minimum_age=18, maximum_age=65).strftime("%Y-%m-%d"),
         "phone_number": fake.phone_number(),
         "ssn": fake.random_number(digits=10),
         "address": fake.address(),

@@ -14,6 +14,7 @@ const userSchema = new Schema(
         avatar: { type: String, default: "" },
         gender: { type: String, required: true, enum: ["MALE", "FEMALE"] },
         ssn: { type: Number, required: true },
+        dob: { type: Date, required: true },
         address: { type: String },
         phone_number: { type: String, required: true },
         status: { type: String, required: true, enum: ["ACTIVE", "INACTIVE", "SUSPENDED"], default: "INACTIVE" },
