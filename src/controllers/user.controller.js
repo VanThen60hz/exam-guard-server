@@ -37,20 +37,28 @@ class UserController {
     listUsers = async (req, res, next) => {
         const { role, page = 1, limit = 10 } = req.query;
         const filter = role ? { role } : {};
-        const users = await UserService.listUsers(filter, page, limit);
+        const { total, totalPages, users } = await UserService.listUsers(filter, page, limit);
         new SuccessResponse({
             message: "List of users retrieved successfully",
-            metadata: users,
+            metadata: {
+                total,
+                totalPages,
+                users,
+            },
         }).send(res);
     };
 
     searchUsers = async (req, res, next) => {
         const { query } = req.query;
         const { page = 1, limit = 10 } = req.query; // Lấy tham số phân trang
-        const users = await UserService.searchUsers(query, page, limit);
+        const { total, totalPages, users } = await UserService.searchUsers(query, page, limit);
         new SuccessResponse({
             message: "Search results retrieved successfully",
-            metadata: users,
+            metadata: {
+                total,
+                totalPages,
+                users,
+            },
         }).send(res);
     };
 }

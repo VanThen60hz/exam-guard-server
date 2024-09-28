@@ -10,6 +10,7 @@ const selectFields = {
     avatar: 1,
     gender: 1,
     ssn: 1,
+    dob: 1,
     phone_number: 1,
     address: 1,
     status: 1,
@@ -50,6 +51,10 @@ const deleteUser = async (userId) => {
     return await userModel.findByIdAndDelete(userId);
 };
 
+const countUser = async (filter = {}) => {
+    return await userModel.countDocuments(filter);
+};
+
 const listUsers = async (filter = {}, page = 1, limit = 10) => {
     const skip = (page - 1) * limit;
     return await userModel.find(filter).skip(skip).limit(limit).lean();
@@ -60,23 +65,24 @@ const searchUsers = async (query, page = 1, limit = 10) => {
     const isNumber = !isNaN(query);
     const isDate = /^\d{4}-\d{2}-\d{2}$/.test(query);
 
-    return await userModel
-        .find({
-            $or: [
-                { username: { $regex: query, $options: "i" } },
-                { email: { $regex: query, $options: "i" } },
-                { name: { $regex: query, $options: "i" } },
-                { phone_number: { $regex: query, $options: "i" } },
-                { address: { $regex: query, $options: "i" } },
-                ...(isNumber ? [{ ssn: Number(query) }] : []),
-                { gender: { $regex: query, $options: "i" } },
-                { status: { $regex: query, $options: "i" } },
-                ...(isDate ? [{ dob: query }, { createdAt: query }, { updatedAt: query }] : []),
-            ],
-        })
-        .skip(skip)
-        .limit(limit)
-        .lean();
+    const searchQuery = {
+        $or: [
+            { username: { $regex: query, $options: "i" } },
+            { email: { $regex: query, $options: "i" } },
+            { name: { $regex: query, $options: "i" } },
+            { phone_number: { $regex: query, $options: "i" } },
+            { address: { $regex: query, $options: "i" } },
+            ...(isNumber ? [{ ssn: Number(query) }] : []),
+            { gender: { $regex: query, $options: "i" } },
+            { status: { $regex: query, $options: "i" } },
+            ...(isDate ? [{ dob: query }, { createdAt: query }, { updatedAt: query }] : []),
+        ],
+    };
+
+    const totalUsers = await userModel.countDocuments(searchQuery); // Đếm số lượng người dùng
+    const users = await userModel.find(searchQuery).skip(skip).limit(limit).lean();
+
+    return { totalUsers, users };
 };
 
 module.exports = {
@@ -87,4 +93,5 @@ module.exports = {
     deleteUser,
     listUsers,
     searchUsers,
+    countUser, // Ensure countUser is exported
 };
