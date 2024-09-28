@@ -1,7 +1,7 @@
 "use strict";
 const { getInfoData } = require("../utils");
 const { BadRequestError } = require("../core/error.response");
-const { findUserByUserId, updateUser, deleteUser, listUsers, searchUsers } = require("../repositories/user.repository");
+const { findUserByUserId, updateUser, deleteUser, listUsers, searchUsers: repoSearchUsers, countUser } = require("../repositories/user.repository"); // Đổi tên searchUsers thành repoSearchUsers
 
 class UserService {
     static findUserById = async (userId) => {
@@ -65,53 +65,64 @@ class UserService {
     };
 
     static listUsers = async (filter = {}, page, limit) => {
+        const totalUsers = await countUser(filter); // Get total count
         const users = await listUsers(filter, page, limit);
-        return users.map((user) =>
-            getInfoData({
-                fields: [
-                    "_id",
-                    "username",
-                    "name",
-                    "email",
-                    "role",
-                    "avatar",
-                    "gender",
-                    "ssn",
-                    "dob",
-                    "address",
-                    "phone_number",
-                    "status",
-                    "createdAt",
-                    "updatedAt",
-                ],
-                object: user,
-            }),
-        );
+        const totalPages = Math.ceil(totalUsers / limit); // Calculate total pages
+        return {
+            total: totalUsers,
+            totalPages,
+            users: users.map((user) =>
+                getInfoData({
+                    fields: [
+                        "_id",
+                        "username",
+                        "name",
+                        "email",
+                        "role",
+                        "avatar",
+                        "gender",
+                        "ssn",
+                        "dob",
+                        "address",
+                        "phone_number",
+                        "status",
+                        "createdAt",
+                        "updatedAt",
+                    ],
+                    object: user,
+                }),
+            ),
+        };
     };
 
     static searchUsers = async (query, page, limit) => {
-        const users = await searchUsers(query, page, limit);
-        return users.map((user) =>
-            getInfoData({
-                fields: [
-                    "_id",
-                    "username",
-                    "name",
-                    "email",
-                    "role",
-                    "avatar",
-                    "gender",
-                    "ssn",
-                    "dob",
-                    "address",
-                    "phone_number",
-                    "status",
-                    "createdAt",
-                    "updatedAt",
-                ],
-                object: user,
-            }),
-        );
+        const { totalUsers, users } = await repoSearchUsers(query, page, limit); // Gọi searchUsers từ repo
+        const totalPages = Math.ceil(totalUsers / limit); // Tính tổng số trang
+        return {
+            total: totalUsers,
+            totalPages,
+            users: users.map((user) =>
+                getInfoData({
+                    fields: [
+                        "_id",
+                        "username",
+                        "name",
+                        "email",
+                        "role",
+                        "avatar",
+                        "gender",
+                        "ssn",
+                        "dob",
+                        "address",
+                        "phone_number",
+                        "status",
+                        "createdAt",
+                        "updatedAt",
+                    ],
+                    object: user,
+                }),
+            ),
+        };
     };
 }
 
