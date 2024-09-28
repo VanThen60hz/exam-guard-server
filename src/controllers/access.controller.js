@@ -3,6 +3,20 @@
 const { OK, CREATED, SuccessResponse } = require("../core/success.response");
 const AccessService = require("../services/access.service");
 class AccessController {
+    handlerRefreshToken = async (req, res, next) => {
+        new OK({
+            message: "Refresh token OK",
+            metadata: await AccessService.handlerRefreshToken(
+                {
+                    refreshToken: req.refreshToken,
+                    user: req.user,
+                    keyStore: req.keyStore,
+                },
+                req.body.refreshToken,
+            ),
+        }).send(res);
+    };
+
     signUp = async (req, res, next) => {
         new CREATED({
             message: "Register OK",

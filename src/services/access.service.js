@@ -7,9 +7,39 @@ const { createTokenPair } = require("../auth/authUtils");
 const { getInfoData } = require("../utils");
 const { BadRequestError, ConflictRequestError, UnauthorizedError } = require("../core/error.response");
 const roles = require("../constants/roles");
-const { findByEmailOrUserName } = require("../repositories/user.repository");
+const { findByEmailOrUserName, findByEmail } = require("../repositories/user.repository");
 
 class AccessService {
+    static handlerRefreshToken = async ({ refreshToken, user, keyStore }) => {
+        const { userId, email } = user;
+        if (keyStore.refreshTokenUsed.includes(refreshToken)) {
+            await keyTokenService.deleteKeyByUserId(userId);
+            throw new ForbiddenError("Refresh token is invalid! Login again");
+        }
+        if (keyStore.refreshToken !== refreshToken) {
+            throw new UnauthorizedError("Refresh token is invalid");
+        }
+        const foundUser = await findByEmail(email);
+        if (!foundUser) {
+            throw new UnauthorizedError("Shop not found");
+        }
+        // create new token pair
+        const tokens = await createTokenPair({ userId, email }, keyStore.publicKey, keyStore.privateKey);
+        // update refreshTokenUsed
+        await keyStore.updateOne({
+            $set: {
+                refreshToken: tokens.refreshToken,
+            },
+            $addToSet: {
+                refreshTokenUsed: refreshToken,
+            },
+        });
+        return {
+            user,
+            tokens,
+        };
+    };
+
     static signUp = async ({
         username,
         password,
@@ -79,8 +109,8 @@ class AccessService {
             }
 
             // Step 6: Create token pair
-            const tokens = await createTokenPair({ userId: newUser._id, email }, publicKey, privateKey);
-            console.log("Created Token Success: ", tokens);
+            const { _id: userId } = newUser;
+            const tokens = await createTokenPair({ userId, email }, publicKey, privateKey);
 
             return {
                 user: getInfoData({
@@ -129,9 +159,12 @@ class AccessService {
 
         const privateKey = crypto.randomBytes(64).toString("hex");
         const publicKey = crypto.randomBytes(64).toString("hex");
-        const tokens = await createTokenPair({ userId: foundUser._id, email: foundUser.email }, publicKey, privateKey);
+
+        const { _id: userId, email } = foundUser;
+        const tokens = await createTokenPair({ userId, email }, publicKey, privateKey);
+
         await keyTokenService.createKeyToken({
-            userId: foundUser._id,
+            userId,
             refreshToken: tokens.refreshToken,
             privateKey,
             publicKey,
