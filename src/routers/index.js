@@ -14,7 +14,7 @@ const router = express.Router();
 router.use("/v1/api/", require("./user"));
 
 // access router
-router.use("/auth", require("./access"));
+router.use("/api/auth", require("./access"));
 
 // router.get("/", (req, res, next) => {
 //     return res.status(200).json({
