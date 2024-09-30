@@ -57,7 +57,9 @@ const countUser = async (filter = {}) => {
 
 const listUsers = async (filter = {}, page = 1, limit = 10) => {
     const skip = (page - 1) * limit;
-    return await userModel.find(filter).skip(skip).limit(limit).lean();
+    const roleFilter = { role: { $in: ["STUDENT", "TEACHER"] } };
+    const combinedFilter = { ...filter, ...roleFilter };
+    return await userModel.find(combinedFilter).skip(skip).limit(limit).lean();
 };
 
 const searchUsers = async (query, page = 1, limit = 10) => {
@@ -77,9 +79,10 @@ const searchUsers = async (query, page = 1, limit = 10) => {
             { status: { $regex: query, $options: "i" } },
             ...(isDate ? [{ dob: query }, { createdAt: query }, { updatedAt: query }] : []),
         ],
+        role: { $in: ["STUDENT", "TEACHER"] },
     };
 
-    const totalUsers = await userModel.countDocuments(searchQuery); // Đếm số lượng người dùng
+    const totalUsers = await userModel.countDocuments(searchQuery);
     const users = await userModel.find(searchQuery).skip(skip).limit(limit).lean();
 
     return { totalUsers, users };
@@ -93,5 +96,5 @@ module.exports = {
     deleteUser,
     listUsers,
     searchUsers,
-    countUser, // Ensure countUser is exported
+    countUser,
 };
