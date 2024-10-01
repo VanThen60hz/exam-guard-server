@@ -35,8 +35,12 @@ class UserController {
     };
 
     listUsers = async (req, res, next) => {
-        const { role, page = 1, limit = 10 } = req.query;
-        const filter = role ? { role } : {};
+        const { role, gender, status, page = 1, limit = 10 } = req.query;
+        const filter = {
+            ...(role && { role }),
+            ...(gender && { gender }),
+            ...(status && { status }),
+        };
         const { total, totalPages, users } = await UserService.listUsers(filter, page, limit);
         new SuccessResponse({
             message: "List of users retrieved successfully",

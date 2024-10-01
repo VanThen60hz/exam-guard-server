@@ -65,9 +65,9 @@ class UserService {
     };
 
     static listUsers = async (filter = {}, page, limit) => {
-        const totalUsers = await countUser(filter); // Get total count
+        const totalUsers = await countUser(filter);
         const users = await listUsers(filter, page, limit);
-        const totalPages = Math.ceil(totalUsers / limit); // Calculate total pages
+        const totalPages = Math.ceil(totalUsers / limit);
         return {
             total: totalUsers,
             totalPages,
