@@ -11,7 +11,7 @@ const router = express.Router();
 // router.use(permission("0000"));
 
 // user router
-router.use("/v1/api/", require("./user"));
+router.use("/api/user", require("./user"));
 
 // access router
 router.use("/api/auth", require("./access"));
