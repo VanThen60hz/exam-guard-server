@@ -17,6 +17,7 @@ const selectFields = {
 };
 
 const findUserByUserId = async (userId, select = selectFields) => {
+    console.log("userId: ", userId);
     return await userModel
         .findOne({
             _id: userId,
