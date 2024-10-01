@@ -60,6 +60,7 @@ const listUsers = async (filter = {}, page = 1, limit = 10) => {
     const skip = (page - 1) * limit;
     const roleFilter = { role: { $in: ["STUDENT", "TEACHER"] } };
     const combinedFilter = { ...filter, ...roleFilter };
+
     return await userModel.find(combinedFilter).skip(skip).limit(limit).lean();
 };
 
