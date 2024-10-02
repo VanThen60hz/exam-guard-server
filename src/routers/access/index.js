@@ -13,7 +13,7 @@ router.post("/login", asyncHandler(accessController.login));
 
 // authentication
 // router.use(authentication);
-// router.use(authenticationV2);
+router.use(authenticationV2);
 
 // logout
 router.post("/logout", authentication, asyncHandler(accessController.logout));

@@ -19,12 +19,12 @@ const createTokenPair = async (payload, publicKey, privateKey) => {
         // accessToken
         const accessToken = JWT.sign(payload, publicKey, {
             // algorithm: "RS256",
-            expiresIn: "2 days",
+            expiresIn: "2d",
         });
 
         const refreshToken = JWT.sign(payload, privateKey, {
             // algorithm: "RS256",
-            expiresIn: "7 days",
+            expiresIn: "7d",
         });
 
         JWT.verify(accessToken, publicKey, (err, decode) => {
