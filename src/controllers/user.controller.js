@@ -4,6 +4,27 @@ const { SuccessResponse } = require("../core/success.response");
 const UserService = require("../services/user.service");
 
 class UserController {
+    getProfile = async (req, res, next) => {
+        const { userId } = req;
+        const userProfile = await UserService.findUserById(userId);
+
+        new SuccessResponse({
+            message: "Profile retrieved successfully",
+            metadata: userProfile,
+        }).send(res);
+    };
+
+    updateProfile = async (req, res, next) => {
+        const { userId } = req;
+        const userData = req.body;
+        const updatedProfile = await UserService.updateUser(userId, userData);
+
+        new SuccessResponse({
+            message: "Profile updated successfully",
+            metadata: updatedProfile,
+        }).send(res);
+    };
+
     findUserById = async (req, res, next) => {
         const { id } = req.params;
         const user = await UserService.findUserById(id);

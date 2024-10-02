@@ -6,8 +6,11 @@ const { asyncHandler } = require("../../helpers/asyncHandler");
 const { adminAuthentication, authentication } = require("../../auth/authUtils"); // Import middleware
 const router = express.Router();
 
-// find user by id
-router.get("/profile/:id", authentication, asyncHandler(UserController.findUserById));
+// get profile
+router.get("/profile", authentication, asyncHandler(UserController.getProfile));
+
+// update profile
+router.patch("/profile", authentication, asyncHandler(UserController.updateProfile));
 
 // check admin
 router.use(adminAuthentication);
@@ -20,6 +23,9 @@ router.get("/search", asyncHandler(UserController.searchUsers));
 
 // sign up
 router.post("/create", asyncHandler(accessController.signUp));
+
+// find user by id
+router.get("/:id", asyncHandler(UserController.findUserById));
 
 // edit user
 router.patch("/:id", asyncHandler(UserController.updateUser));
