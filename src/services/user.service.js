@@ -1,7 +1,14 @@
 "use strict";
 const { getInfoData } = require("../utils");
 const { BadRequestError } = require("../core/error.response");
-const { findUserByUserId, updateUser, deleteUser, listUsers, searchUsers: repoSearchUsers, countUser } = require("../repositories/user.repository"); // Đổi tên searchUsers thành repoSearchUsers
+const {
+    findUserByUserId,
+    updateUser,
+    deleteUser,
+    listUsers,
+    searchUsers: repoSearchUsers,
+    countUser,
+} = require("../repositories/user.repository"); // Đổi tên searchUsers thành repoSearchUsers
 
 class UserService {
     static findUserById = async (userId) => {

@@ -1,12 +1,12 @@
 "use strict";
 
 const { SuccessResponse } = require("../core/success.response");
-const UserService = require("../services/user.service");
+const userService = require("../services/user.service");
 
 class UserController {
     getProfile = async (req, res, next) => {
         const { userId } = req;
-        const userProfile = await UserService.findUserById(userId);
+        const userProfile = await userService.findUserById(userId);
 
         new SuccessResponse({
             message: "Profile retrieved successfully",
@@ -17,7 +17,7 @@ class UserController {
     updateProfile = async (req, res, next) => {
         const { userId } = req;
         const userData = req.body;
-        const updatedProfile = await UserService.updateUser(userId, userData);
+        const updatedProfile = await userService.updateUser(userId, userData);
 
         new SuccessResponse({
             message: "Profile updated successfully",
@@ -27,7 +27,7 @@ class UserController {
 
     findUserById = async (req, res, next) => {
         const { id } = req.params;
-        const user = await UserService.findUserById(id);
+        const user = await userService.findUserById(id);
 
         new SuccessResponse({
             message: "User retrieved successfully",
@@ -38,7 +38,7 @@ class UserController {
     updateUser = async (req, res, next) => {
         const { id } = req.params;
         const userData = req.body;
-        const updatedUser = await UserService.updateUser(id, userData);
+        const updatedUser = await userService.updateUser(id, userData);
 
         new SuccessResponse({
             message: "User updated successfully",
@@ -48,7 +48,7 @@ class UserController {
 
     deleteUser = async (req, res, next) => {
         const { id } = req.params;
-        const response = await UserService.deleteUser(id);
+        const response = await userService.deleteUser(id);
 
         new SuccessResponse({
             message: response.message,
@@ -63,7 +63,7 @@ class UserController {
                 ...(gender && { gender }),
                 ...(status && { status }),
             };
-            const { total, totalPages, users } = await UserService.listUsers(filter, page, limit);
+            const { total, totalPages, users } = await userService.listUsers(filter, page, limit);
 
             // Gửi phản hồi thành công
             new SuccessResponse({
@@ -81,8 +81,8 @@ class UserController {
 
     searchUsers = async (req, res, next) => {
         const { query } = req.query;
-        const { page = 1, limit = 10 } = req.query; // Lấy tham số phân trang
-        const { total, totalPages, users } = await UserService.searchUsers(query, page, limit);
+        const { page = 1, limit = 10 } = req.query;
+        const { total, totalPages, users } = await userService.searchUsers(query, page, limit);
         new SuccessResponse({
             message: "Search results retrieved successfully",
             metadata: {
