@@ -3,33 +3,25 @@ import json
 from faker import Faker
 import sys
 
-# Khởi tạo Faker
 fake = Faker()
 
-# URL API
-url = "http://localhost:8000/v1/api/user/create"
+url = "http://localhost:8000/api/user/create"
 
-# thêm Authorization là accessToken của 1 user role ADMIN khi Login vào header
-# thêm x-client-id là _id của user role ADMIN khi Login vào header
 
-# Headers
 headers = {
-    'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NmY0MTMyYWYzMmVmNDI2YjBjOTE0ODQiLCJlbWFpbCI6Im5ndXllbnZhbmFkbWluQGV4YW1wbGUuY29tIiwiaWF0IjoxNzI3NDIyMDYwLCJleHAiOjE3Mjc1OTQ4NjB9.gKdM8w1dACrC6-auHQSJUBXTIgn0bMwR3gyHTtag5aY',
-    'x-client-id': '66f4132af32ef426b0c91484',
+    'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzBhMDkzZDEyOWM3OGU1MWE2ODYwNTgiLCJlbWFpbCI6Im5ndXllbnZhbmFkbWluQGV4YW1wbGUuY29tIiwiaWF0IjoxNzI4NzEwOTczLCJleHAiOjE3Mjg4ODM3NzN9.zLTh0KBVZW0M4Ktz7hd3cP0wXm8Va2TqIrK4v3rOCJk',
+    'x-client-id': '670a093d129c78e51a686058',
     'Content-Type': 'application/json'
 }
 
-# Lấy số lượng request từ command line
 try:
     num_requests = int(sys.argv[1])
 except (IndexError, ValueError):
     print("Please provide a valid number of requests.")
     sys.exit(1)
 
-# Mật khẩu giữ nguyên
-password = "securepassword123"
 
-# Hàm tạo User ngẫu nhiên
+password = "securepassword123"
 
 
 def generate_random_user():
@@ -38,7 +30,6 @@ def generate_random_user():
         "name": fake.name(),
         "email": fake.email(),
         "password": password,
-        # "role": fake.random_element(elements=("TEACHER", "STUDENT", "ADMIN")),
         "role": fake.random_element(elements=("STUDENT", "TEACHER")),
         "gender": fake.random_element(elements=("MALE", "FEMALE")),
         "dob": fake.date_of_birth(minimum_age=18, maximum_age=65).strftime("%Y-%m-%d"),
@@ -49,7 +40,6 @@ def generate_random_user():
     }
 
 
-# Gửi request với dữ liệu ngẫu nhiên
 for _ in range(num_requests):
     payload = json.dumps(generate_random_user())
     response = requests.post(url, headers=headers, data=payload)

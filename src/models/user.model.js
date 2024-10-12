@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const { model, Schema, Types } = require("mongoose"); // Erase if already required
 const DOCUMENT_NAME = "User";
-const COLLECTION_NAME = "Users";
+const COLLECTION_NAME = "users";
 
 const userSchema = new Schema(
     {
@@ -18,12 +18,10 @@ const userSchema = new Schema(
         address: { type: String },
         phone_number: { type: String, required: true },
         status: { type: String, required: true, enum: ["ACTIVE", "INACTIVE", "SUSPENDED"], default: "INACTIVE" },
-        createdAt: { type: Date, default: Date.now },
-        updatedAt: { type: Date, default: Date.now },
     },
     {
         timestamps: true,
-        collectionName: COLLECTION_NAME,
+        collection: COLLECTION_NAME,
     },
 );
 

@@ -7,7 +7,7 @@ const { createTokenPair } = require("../auth/authUtils");
 const { getInfoData } = require("../utils");
 const { BadRequestError, ConflictRequestError, UnauthorizedError } = require("../core/error.response");
 const roles = require("../constants/roles");
-const { findByEmailOrUserName, findByEmail } = require("../repositories/user.repository");
+const userRepo = require("../repo/user.repo");
 
 class AccessService {
     static handlerRefreshToken = async ({ refreshToken, user, keyStore }) => {
@@ -19,7 +19,7 @@ class AccessService {
         if (keyStore.refreshToken !== refreshToken) {
             throw new UnauthorizedError("Refresh token is invalid");
         }
-        const foundUser = await findByEmail(email);
+        const foundUser = await userRepo.findByEmail(email);
         if (!foundUser) {
             throw new UnauthorizedError("Shop not found");
         }
@@ -92,8 +92,6 @@ class AccessService {
             const privateKey = crypto.randomBytes(64).toString("hex");
             const publicKey = crypto.randomBytes(64).toString("hex");
 
-            console.log({ privateKey, publicKey });
-
             // Step 5: Save keys to the key store
             const keyStore = await keyTokenService.createKeyToken({
                 userId: newUser._id,
@@ -138,7 +136,7 @@ class AccessService {
     };
 
     static login = async ({ usernameOrEmail, password, refreshToken = null }) => {
-        const foundUser = await findByEmailOrUserName(usernameOrEmail);
+        const foundUser = await userRepo.findByEmailOrUserName(usernameOrEmail);
         if (!foundUser) {
             throw new BadRequestError("User not registered");
         }
@@ -195,7 +193,6 @@ class AccessService {
 
     static logout = async (keyStore) => {
         const delKey = await keyTokenService.removeKeyToken(keyStore._id);
-        console.log("Deleted Key: ", delKey);
         return delKey;
     };
 }

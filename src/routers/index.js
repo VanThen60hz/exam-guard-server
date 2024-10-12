@@ -10,6 +10,9 @@ const router = express.Router();
 // // check permission
 // router.use(permission("0000"));
 
+// exam router
+router.use("/api/exam", require("./exam"));
+
 // user router
 router.use("/api/user", require("./user"));
 
