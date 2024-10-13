@@ -43,11 +43,11 @@ class QuestionRepo {
         const skip = (page - 1) * limit;
         return await questionModel.find(filter).skip(skip).limit(limit).populate("exam").lean();
     }
-
-    static async filterQuestions(query, page = 1, limit = 10) {
+    static async filterQuestions(query, page = 1, limit = 10, examId) {
         const skip = (page - 1) * limit;
 
         const searchQuery = {
+            exam: examId,
             $or: [
                 { questionText: { $regex: query, $options: "i" } },
                 { questionType: { $regex: query, $options: "i" } },

@@ -6,14 +6,19 @@ const { teacherAuthentication, authentication } = require("../../auth/authUtils"
 const questionController = require("../../controllers/question.controller");
 const router = express.Router();
 
+// exam router for user
 router.delete("/:id", authentication, asyncHandler(examController.deleteExam));
 
 router.get("/list", authentication, asyncHandler(examController.listExams));
 
-router.get("/:examId/question/list", asyncHandler(questionController.listQuestions));
+// exam router for user
+router.get("/:examId/question/list", authentication, asyncHandler(questionController.listQuestions));
+
+router.get("/:examId/question/search", authentication, asyncHandler(questionController.searchQuestions));
 
 router.use(teacherAuthentication);
 
+// exam router for teacher
 router.get("/search", asyncHandler(examController.searchExams));
 
 router.post("/create", asyncHandler(examController.createExam));
@@ -22,8 +27,7 @@ router.get("/:id", asyncHandler(examController.getExamById));
 
 router.patch("/:id", asyncHandler(examController.updateExam));
 
-// question router
-
+// question router for teacher
 router.post("/:examId/question/create", asyncHandler(questionController.createQuestion));
 
 router.patch("/:examId/question/:questionId", asyncHandler(questionController.updateQuestion));

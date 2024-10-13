@@ -134,7 +134,6 @@ class QuestionService {
                         "questionScore",
                         "correctAnswer",
                         "options",
-                        "exam",
                         "createdAt",
                         "updatedAt",
                     ],
@@ -144,11 +143,10 @@ class QuestionService {
         };
     };
 
-    static filterQuestions = async (query, page, limit) => {
-        console.log("Query:", query);
-
-        const { totalQuestions, questions } = await questionRepo.filterQuestions(query, page, limit);
+    static filterQuestions = async (query, page, limit, examId) => {
+        const { totalQuestions, questions } = await questionRepo.filterQuestions(query, page, limit, examId);
         const totalPages = Math.ceil(totalQuestions / limit);
+
         return {
             total: totalQuestions,
             totalPages,
