@@ -99,15 +99,15 @@ class QuestionService {
         });
     };
 
-    static deleteQuestion = async (questionId, userId) => {
+    static deleteQuestion = async (examId, questionId, teacherId) => {
+        const examToCheck = await examRepo.findExamById(examId);
+        if (!examToCheck || examToCheck.teacher._id.toString() !== teacherId) {
+            throw new UnauthorizedError("You are not authorized to update a question on this exam");
+        }
+
         const questionToDelete = await questionRepo.findQuestionById(questionId);
         if (!questionToDelete) {
             throw new BadRequestError("Question not found");
-        }
-
-        // Verify the user is authorized to delete this question
-        if (questionToDelete.exam.teacher.toString() !== userId) {
-            throw new ForbiddenError("You do not have permission to delete this question");
         }
 
         const deletedQuestion = await questionRepo.deleteQuestion(questionId);

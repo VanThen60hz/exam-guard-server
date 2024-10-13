@@ -10,6 +10,8 @@ router.delete("/:id", authentication, asyncHandler(examController.deleteExam));
 
 router.get("/list", authentication, asyncHandler(examController.listExams));
 
+router.get("/:examId/question/list", asyncHandler(questionController.listQuestions));
+
 router.use(teacherAuthentication);
 
 router.get("/search", asyncHandler(examController.searchExams));
@@ -21,8 +23,11 @@ router.get("/:id", asyncHandler(examController.getExamById));
 router.patch("/:id", asyncHandler(examController.updateExam));
 
 // question router
+
 router.post("/:examId/question/create", asyncHandler(questionController.createQuestion));
 
-router.patch("/:examId/question/:questionId", asyncHandler(questionController.createQuestion));
+router.patch("/:examId/question/:questionId", asyncHandler(questionController.updateQuestion));
+
+router.delete("/:examId/question/:questionId", asyncHandler(questionController.deleteQuestion));
 
 module.exports = router;

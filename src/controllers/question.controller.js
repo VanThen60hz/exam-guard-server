@@ -41,8 +41,10 @@ class QuestionController {
     };
 
     deleteQuestion = async (req, res, next) => {
-        const { id } = req.params;
-        const response = await questionService.deleteQuestion(id);
+        const { examId, questionId } = req.params;
+
+        const teacherId = req.userId;
+        const response = await questionService.deleteQuestion(examId, questionId, teacherId);
 
         new SuccessResponse({
             message: response.message,
