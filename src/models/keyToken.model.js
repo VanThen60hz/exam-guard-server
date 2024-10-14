@@ -3,7 +3,7 @@
 const { Schema, model } = require("mongoose"); // Erase if already required
 
 const DOCUMENT_NAME = "Key";
-const COLLECTION_NAME = "Keys";
+const COLLECTION_NAME = "keys";
 
 // Declare the Schema of the Mongo model
 var keyTokenSchema = new Schema(
@@ -32,7 +32,7 @@ var keyTokenSchema = new Schema(
     },
     {
         timestamps: true,
-        collectionName: COLLECTION_NAME,
+        collection: COLLECTION_NAME,
     },
 );
 

@@ -1,18 +1,11 @@
 "use strict";
 const { getInfoData } = require("../utils");
 const { BadRequestError } = require("../core/error.response");
-const {
-    findUserByUserId,
-    updateUser,
-    deleteUser,
-    listUsers,
-    searchUsers: repoSearchUsers,
-    countUser,
-} = require("../repositories/user.repository"); // Đổi tên searchUsers thành repoSearchUsers
+const userRepo = require("../repo/user.repo"); // Đổi tên searchUsers thành repoSearchUsers
 
 class UserService {
     static findUserById = async (userId) => {
-        const user = await findUserByUserId(userId);
+        const user = await userRepo.findUserByUserId(userId);
         if (!user) {
             throw new BadRequestError("User not found");
         }
@@ -38,7 +31,7 @@ class UserService {
     };
 
     static updateUser = async (userId, userData) => {
-        const updatedUser = await updateUser(userId, userData);
+        const updatedUser = await userRepo.updateUser(userId, userData);
         if (!updatedUser) {
             throw new BadRequestError("User not found");
         }
@@ -64,7 +57,7 @@ class UserService {
     };
 
     static deleteUser = async (userId) => {
-        const deletedUser = await deleteUser(userId);
+        const deletedUser = await userRepo.deleteUser(userId);
         if (!deletedUser) {
             throw new BadRequestError("User not found");
         }
@@ -72,8 +65,8 @@ class UserService {
     };
 
     static listUsers = async (filter = {}, page, limit) => {
-        const totalUsers = await countUser(filter);
-        const users = await listUsers(filter, page, limit);
+        const totalUsers = await userRepo.countUsers(filter);
+        const users = await userRepo.listUsers(filter, page, limit);
         const totalPages = Math.ceil(totalUsers / limit);
         return {
             total: totalUsers,
@@ -103,7 +96,7 @@ class UserService {
     };
 
     static searchUsers = async (query, page, limit) => {
-        const { totalUsers, users } = await repoSearchUsers(query, page, limit); // Gọi searchUsers từ repo
+        const { totalUsers, users } = await userRepo.searchUsers(query, page, limit); // Gọi searchUsers từ repo
         const totalPages = Math.ceil(totalUsers / limit); // Tính tổng số trang
         return {
             total: totalUsers,

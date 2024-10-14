@@ -5,7 +5,7 @@ const JWT = require("jsonwebtoken");
 const { asyncHandler } = require("../helpers/asyncHandler");
 const { UnauthorizedError, NotFoundError } = require("../core/error.response");
 const { findByUserId } = require("../services/keyToken.service");
-const { findUserByUserId } = require("../repositories/user.repository");
+const userRepo = require("../repo/user.repo");
 const roles = require("../constants/roles");
 const HEADER = {
     API_KEY: "x-api-key",
@@ -75,6 +75,11 @@ const authenticationV2 = asyncHandler(async (req, res, next) => {
 const authentication = asyncHandler(async (req, res, next) => {
     const userId = req.headers[HEADER.CLIENT_ID];
     if (!userId) throw new UnauthorizedError("Unauthorized");
+
+    console.log("userId: ", userId);
+
+    const user = await userRepo.findUserByUserId(userId);
+    if (!user) throw new NotFoundError("Not found user");
     console.log("userId: ", userId);
     const keyStore = await findByUserId(userId);
     if (!keyStore) throw new NotFoundError("Not found keyStore");
@@ -86,6 +91,7 @@ const authentication = asyncHandler(async (req, res, next) => {
         if (userId !== decodeUser.userId) throw new UnauthorizedError("Invalid Token");
         req.keyStore = keyStore;
         req.userId = userId;
+        req.role = user.role;
         return next();
     } catch (error) {
         throw new UnauthorizedError("Unauthorized");
@@ -97,7 +103,7 @@ const adminAuthentication = asyncHandler(async (req, res, next) => {
     console.log("userId: ", userId);
     if (!userId) throw new UnauthorizedError("Unauthorized");
 
-    const user = await findUserByUserId(userId);
+    const user = await userRepo.findUserByUserId(userId);
     if (user.role !== roles.ADMIN) throw new UnauthorizedError("Unauthorized");
 
     console.log("userId: ", userId);
@@ -116,6 +122,32 @@ const adminAuthentication = asyncHandler(async (req, res, next) => {
     }
 });
 
+const teacherAuthentication = asyncHandler(async (req, res, next) => {
+    const userId = req.headers[HEADER.CLIENT_ID];
+    console.log("userId: ", userId);
+    if (!userId) throw new UnauthorizedError("Unauthorized");
+
+    const user = await userRepo.findUserByUserId(userId);
+    if (user.role !== roles.TEACHER) throw new UnauthorizedError("Unauthorized");
+
+    console.log("userId: ", userId);
+    const keyStore = await findByUserId(userId);
+    if (!keyStore) throw new NotFoundError("Not found keyStore");
+    //3
+    const accessToken = req.headers[HEADER.AUTHORIZATION];
+    if (!accessToken) throw new UnauthorizedError("Unauthorized");
+    try {
+        const decodeUser = JWT.verify(accessToken, keyStore.publicKey);
+
+        if (userId !== decodeUser.userId) throw new UnauthorizedError("Invalid Token");
+        req.keyStore = keyStore;
+        req.userId = userId;
+        return next();
+    } catch (error) {
+        throw new UnauthorizedError("Unauthorized");
+    }
+});
+
 const verifyJWT = async (token, keySecret) => {
     return JWT.verify(token, keySecret);
 };
@@ -124,6 +156,7 @@ module.exports = {
     createTokenPair,
     authentication,
     authenticationV2,
+    teacherAuthentication,
     adminAuthentication,
     verifyJWT,
 };
