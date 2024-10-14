@@ -69,6 +69,7 @@ class QuestionController {
             next(error);
         }
     };
+
     searchQuestions = async (req, res, next) => {
         const { examId } = req.params; // Lấy examId từ URL
         const { query } = req.query;

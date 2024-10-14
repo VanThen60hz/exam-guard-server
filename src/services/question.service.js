@@ -119,6 +119,11 @@ class QuestionService {
     };
 
     static listQuestions = async (filter = {}, page, limit) => {
+        const examToCheck = await examRepo.findExamById(examId);
+        if (!examToCheck || examToCheck.teacher._id.toString() !== teacherId) {
+            throw new UnauthorizedError("You are not authorized to update a question on this exam");
+        }
+
         const totalQuestions = await questionRepo.countQuestions(filter);
         const questions = await questionRepo.listQuestions(filter, page, limit);
         const totalPages = Math.ceil(totalQuestions / limit);
