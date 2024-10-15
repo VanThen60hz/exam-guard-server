@@ -88,6 +88,16 @@ class ExamController {
             },
         }).send(res);
     };
+
+    completeExam = async (req, res, next) => {
+        const { id } = req.params;
+        const userId = req.userId;
+        const response = await examService.completeExam(id, userId);
+
+        new SuccessResponse({
+            message: response.message,
+        }).send(res);
+    };
 }
 
 module.exports = new ExamController();

@@ -34,6 +34,18 @@ class AnswerController {
             metadata: answers,
         }).send(res);
     };
+
+    listAnswersByStudentId = async (req, res, next) => {
+        const { examId, studentId } = req.params;
+        const { page, limit } = req.query;
+
+        const answers = await answerService.listAnswersByStudent(studentId, examId, page, limit);
+
+        new SuccessResponse({
+            message: "Answers retrieved successfully",
+            metadata: answers,
+        }).send(res);
+    };
 }
 
 module.exports = new AnswerController();

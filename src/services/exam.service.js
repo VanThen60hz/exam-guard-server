@@ -2,6 +2,7 @@
 const { getInfoData } = require("../utils");
 const { BadRequestError, UnauthorizedError, ForbiddenError } = require("../core/error.response");
 const examRepo = require("../repo/exam.repo");
+const gradeRepo = require("../repo/exam.repo");
 
 class ExamService {
     static findExamById = async (examId, userId) => {
@@ -187,6 +188,24 @@ class ExamService {
                 }),
             ),
         };
+    };
+
+    static completeExam = async (examId, userId) => {
+        const exam = await examRepo.findExamById(examId);
+        if (!exam) {
+            throw new BadRequestError("Exam not found");
+        }
+
+        if (exam.teacher._id.toString() !== userId) {
+            throw new UnauthorizedError("You are not authorized to complete this exam");
+        }
+
+        const completedExam = await examRepo.completeExam(examId);
+        if (!completedExam) {
+            throw new BadRequestError("Failed to complete exam");
+        }
+
+        return { message: "Exam completed successfully" };
     };
 }
 

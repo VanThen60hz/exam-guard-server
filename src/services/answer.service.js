@@ -112,9 +112,21 @@ class AnswerService {
             throw new BadRequestError("Student ID and Exam ID are required");
         }
 
-        const filter = { student: studentId, exam: examId };
+        const examQuestions = await questionRepo.findQuestionsByExam(examId);
+        console.log("Exam Questions:", examQuestions);
+
+        if (!Array.isArray(examQuestions)) {
+            throw new Error("Expected examQuestions to be an array");
+        }
+
+        const questionIds = examQuestions.map((question) => question._id);
+
+        const filter = { student: studentId, question: { $in: questionIds } };
+
         const totalAnswers = await answerRepo.countAnswers(filter);
+
         const answers = await answerRepo.listAnswers(filter, page, limit);
+
         const totalPages = Math.ceil(totalAnswers / limit);
 
         return {

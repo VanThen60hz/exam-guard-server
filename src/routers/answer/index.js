@@ -9,8 +9,14 @@ router.get("/:id", authentication, asyncHandler(answerController.getAnswerById))
 
 router.post("/:id", authentication, asyncHandler(answerController.answerQuestion));
 
+router.get(
+    "/:examId/list-by-student/:studentId",
+    authentication,
+    asyncHandler(answerController.listAnswersByStudentId),
+);
+
 router.use(teacherAuthentication);
 
-router.get("/list/:questionId", asyncHandler(answerController.listAnswersByQuestion));
+router.get("/list-by-question/:questionId", asyncHandler(answerController.listAnswersByQuestion));
 
 module.exports = router;
