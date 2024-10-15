@@ -7,6 +7,10 @@ const router = express.Router();
 
 router.get("/:id", authentication, asyncHandler(answerController.getAnswerById));
 
-router.post("/:questionId", authentication, asyncHandler(answerController.answerQuestion));
+router.post("/:id", authentication, asyncHandler(answerController.answerQuestion));
+
+router.use(teacherAuthentication);
+
+router.get("/list/:questionId", asyncHandler(answerController.listAnswersByQuestion));
 
 module.exports = router;
