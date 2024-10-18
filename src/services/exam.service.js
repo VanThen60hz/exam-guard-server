@@ -100,7 +100,7 @@ class ExamService {
         return { message: "Exam deleted successfully" };
     };
 
-    static listExams = async (filter = {}, page, limit) => {
+    static listExamsForStudent = async (filter = {}, page, limit) => {
         const totalExams = await examRepo.countExams(filter);
         const exams = await examRepo.listExams(filter, page, limit);
         const totalPages = Math.ceil(totalExams / limit);
@@ -127,18 +127,10 @@ class ExamService {
         };
     };
 
-    static listExamForTeacher = async (teacherId, page = 1, limit = 10) => {
-        if (!teacherId) {
-            throw new BadRequestError("Teacher ID is required");
-        }
-
-        const filter = { teacher: teacherId };
-
+    static listExamsForTeacher = async (filter = {}, page, limit) => {
         const totalExams = await examRepo.countExams(filter);
-
         const exams = await examRepo.listExams(filter, page, limit);
         const totalPages = Math.ceil(totalExams / limit);
-
         return {
             total: totalExams,
             totalPages,
@@ -151,7 +143,6 @@ class ExamService {
                         "startTime",
                         "endTime",
                         "status",
-                        "teacher",
                         "question",
                         "createdAt",
                         "updatedAt",

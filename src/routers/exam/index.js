@@ -18,6 +18,8 @@ router.get("/search", asyncHandler(examController.searchExams));
 
 router.post("/create", asyncHandler(examController.createExam));
 
+router.post("/complete/:id", asyncHandler(examController.createExam));
+
 router.get("/:id", asyncHandler(examController.getExamById));
 
 router.patch("/:id", asyncHandler(examController.updateExam));
