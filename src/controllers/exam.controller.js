@@ -51,14 +51,16 @@ class ExamController {
             };
 
             let responseData;
-            console.log("Role:", req.role);
 
             if (req.role === "TEACHER") {
                 const teacherId = req.userId;
-                responseData = await examService.listExamForTeacher(teacherId, page, limit);
+                filter.teacher = teacherId;
+                if (status) filter.status = status;
+                responseData = await examService.listExamsForTeacher(filter, page, limit);
             } else {
                 if (teacher) filter.teacher = teacher;
-                responseData = await examService.listExams(filter, page, limit);
+                filter.status = "In Progress";
+                responseData = await examService.listExamsForStudent(filter, page, limit);
             }
 
             new SuccessResponse({
@@ -86,6 +88,16 @@ class ExamController {
                 totalPages,
                 exams,
             },
+        }).send(res);
+    };
+
+    completeExam = async (req, res, next) => {
+        const { id } = req.params;
+        const userId = req.userId;
+        const response = await examService.completeExam(id, userId);
+
+        new SuccessResponse({
+            message: response.message,
         }).send(res);
     };
 }

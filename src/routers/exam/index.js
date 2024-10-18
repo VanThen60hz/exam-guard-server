@@ -7,16 +7,18 @@ const questionController = require("../../controllers/question.controller");
 const router = express.Router();
 
 // exam router for user
-router.delete("/:id", authentication, asyncHandler(examController.deleteExam));
-
 router.get("/list", authentication, asyncHandler(examController.listExams));
 
 router.use(teacherAuthentication);
+
+router.delete("/:id", authentication, asyncHandler(examController.deleteExam));
 
 // exam router for teacher
 router.get("/search", asyncHandler(examController.searchExams));
 
 router.post("/create", asyncHandler(examController.createExam));
+
+router.post("/complete/:id", asyncHandler(examController.createExam));
 
 router.get("/:id", asyncHandler(examController.getExamById));
 

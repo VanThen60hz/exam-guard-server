@@ -13,7 +13,7 @@ const startExamCron = () => {
 
             const inProgressUpdate = await examModel.updateMany(
                 { startTime: { $lt: currentTime }, endTime: { $gt: currentTime } },
-                { $set: { status: "InProgress" } },
+                { $set: { status: "In Progress" } },
             );
 
             const completedUpdate = await examModel.updateMany(

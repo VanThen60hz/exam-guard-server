@@ -16,56 +16,34 @@ class AnswerController {
 
     answerQuestion = async (req, res, next) => {
         const studentId = req.userId;
-        const { questionId } = req.params;
+        const { id } = req.params;
 
-        const newAnswer = await answerService.answerQuestion(req, questionId, studentId);
+        const newAnswer = await answerService.answerQuestion(req, id, studentId);
         new SuccessResponse({
             message: "Answer created successfully",
             metadata: newAnswer,
         }).send(res);
     };
 
-    listAnswers = async (req, res, next) => {
-        try {
-            const { question, page = 1, limit = 10 } = req.query;
-            const filter = {
-                ...(question && { question }),
-            };
-
-            let responseData;
-
-            if (req.role === "TEACHER") {
-                const teacherId = req.userId;
-                responseData = await answerService.listAnswersForTeacher(teacherId, page, limit);
-            } else {
-                responseData = await answerService.listAnswers(filter, page, limit);
-            }
-
-            new SuccessResponse({
-                message: "List of answers retrieved successfully",
-                metadata: {
-                    total: responseData.total,
-                    totalPages: responseData.totalPages,
-                    answers: responseData.answers,
-                },
-            }).send(res);
-        } catch (error) {
-            next(error);
-        }
-    };
-
-    searchAnswers = async (req, res, next) => {
-        const { query } = req.query;
-        const { page = 1, limit = 10 } = req.query;
-        const { total, totalPages, answers } = await answerService.filterAnswers(query, page, limit);
+    listAnswersByQuestion = async (req, res, next) => {
+        const { questionId } = req.params;
+        const answers = await answerService.listAnswersByQuestion(questionId);
 
         new SuccessResponse({
-            message: "Search results retrieved successfully",
-            metadata: {
-                total,
-                totalPages,
-                answers,
-            },
+            message: "Answers retrieved successfully",
+            metadata: answers,
+        }).send(res);
+    };
+
+    listAnswersByStudentId = async (req, res, next) => {
+        const { examId, studentId } = req.params;
+        const { page, limit } = req.query;
+
+        const answers = await answerService.listAnswersByStudent(studentId, examId, page, limit);
+
+        new SuccessResponse({
+            message: "Answers retrieved successfully",
+            metadata: answers,
         }).send(res);
     };
 }
