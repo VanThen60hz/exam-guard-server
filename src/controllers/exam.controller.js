@@ -44,49 +44,58 @@ class ExamController {
     };
 
     listExams = async (req, res, next) => {
-        try {
-            const { teacher, status, page = 1, limit = 10 } = req.query;
-            const filter = {
-                ...(status && { status }),
-            };
+        const { teacher, status, page = 1, limit = 10 } = req.query;
+        const filter = {
+            ...(status && { status }),
+        };
 
-            let responseData;
+        let responseData;
 
-            if (req.role === "TEACHER") {
-                const teacherId = req.userId;
-                filter.teacher = teacherId;
-                if (status) filter.status = status;
-                responseData = await examService.listExamsForTeacher(filter, page, limit);
-            } else {
-                if (teacher) filter.teacher = teacher;
-                filter.status = "In Progress";
-                responseData = await examService.listExamsForStudent(filter, page, limit);
-            }
-
-            new SuccessResponse({
-                message: "List of exams retrieved successfully",
-                metadata: {
-                    total: responseData.total,
-                    totalPages: responseData.totalPages,
-                    exams: responseData.exams,
-                },
-            }).send(res);
-        } catch (error) {
-            next(error);
+        if (req.role === "TEACHER") {
+            const teacherId = req.userId;
+            filter.teacher = teacherId;
+            if (status) filter.status = status;
+            responseData = await examService.listExamsForTeacher(filter, page, limit);
+        } else {
+            if (teacher) filter.teacher = teacher;
+            filter.status = "In Progress";
+            responseData = await examService.listExamsForStudent(filter, page, limit);
         }
+
+        new SuccessResponse({
+            message: "List of exams retrieved successfully",
+            metadata: {
+                total: responseData.total,
+                totalPages: responseData.totalPages,
+                exams: responseData.exams,
+            },
+        }).send(res);
     };
 
     searchExams = async (req, res, next) => {
         const { query } = req.query;
         const { page = 1, limit = 10 } = req.query;
-        const { total, totalPages, exams } = await examService.filterExams(query, page, limit);
+        const filter = {};
+        let responseData;
+
+        if (req.role === "TEACHER") {
+            console.log("TEACHER 1 đã tới đây");
+            const teacherId = req.userId;
+            filter.teacher = teacherId;
+            responseData = await examService.filterExamsForTeacher({ ...filter, query }, page, limit);
+        } else {
+            console.log("TEACHER 2 đã tới đây");
+
+            filter.status = "In Progress";
+            responseData = await examService.filterExamsForStudent({ ...filter, query }, page, limit);
+        }
 
         new SuccessResponse({
             message: "Search results retrieved successfully",
             metadata: {
-                total,
-                totalPages,
-                exams,
+                total: responseData.total,
+                totalPages: responseData.totalPages,
+                exams: responseData.exams,
             },
         }).send(res);
     };

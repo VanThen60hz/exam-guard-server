@@ -153,11 +153,32 @@ class ExamService {
         };
     };
 
-    static filterExams = async (query, page, limit) => {
-        console.log("Query:", query);
+    static async filterExamsForTeacher(filter, page = 1, limit = 10) {
+        const { query, teacher: teacherId } = filter;
 
-        const { totalExams, exams } = await examRepo.filterExams(query, page, limit);
+        const { totalExams, exams } = await examRepo.filterExams(query, page, limit, { teacher: teacherId });
+
         const totalPages = Math.ceil(totalExams / limit);
+
+        return {
+            total: totalExams,
+            totalPages,
+            exams: exams.map((exam) =>
+                getInfoData({
+                    fields: ["_id", "title", "description", "startTime", "endTime", "status", "createdAt", "updatedAt"],
+                    object: exam,
+                }),
+            ),
+        };
+    }
+
+    static async filterExamsForStudent(filter, page = 1, limit = 10) {
+        const { query, status } = filter;
+
+        const { totalExams, exams } = await examRepo.filterExams(query, page, limit, { status });
+
+        const totalPages = Math.ceil(totalExams / limit);
+
         return {
             total: totalExams,
             totalPages,
@@ -171,7 +192,6 @@ class ExamService {
                         "endTime",
                         "status",
                         "teacher",
-                        "question",
                         "createdAt",
                         "updatedAt",
                     ],
@@ -179,7 +199,7 @@ class ExamService {
                 }),
             ),
         };
-    };
+    }
 
     static completeExam = async (examId, userId) => {
         const exam = await examRepo.findExamById(examId);

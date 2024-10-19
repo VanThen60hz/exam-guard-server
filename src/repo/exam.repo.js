@@ -45,11 +45,12 @@ class ExamRepo {
         return await examModel.find(filter).skip(skip).limit(limit).populate("teacher").lean();
     }
 
-    static async filterExams(query, page = 1, limit = 10) {
+    static async filterExams(query, page = 1, limit = 10, additionalFilter = {}) {
         const skip = (page - 1) * limit;
         const isDate = /^\d{4}-\d{2}-\d{2}$/.test(query);
 
         const searchQuery = {
+            ...additionalFilter,
             $or: [
                 { title: { $regex: query, $options: "i" } },
                 { description: { $regex: query, $options: "i" } },
@@ -59,7 +60,7 @@ class ExamRepo {
         };
 
         const totalExams = await examModel.countDocuments(searchQuery);
-        const exams = await examModel.find(searchQuery).skip(skip).limit(limit).lean();
+        const exams = await examModel.find(searchQuery).skip(skip).limit(limit).populate("teacher").lean();
 
         return { totalExams, exams };
     }

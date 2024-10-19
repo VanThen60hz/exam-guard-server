@@ -17,7 +17,7 @@ require("./dbs/init.mongodb");
 
 // Start the cron job
 
-examCron();
+// examCron();
 
 // init routes
 app.use("/", require("./routers"));

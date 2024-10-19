@@ -9,12 +9,13 @@ const router = express.Router();
 // exam router for user
 router.get("/list", authentication, asyncHandler(examController.listExams));
 
+router.get("/search", authentication, asyncHandler(examController.searchExams));
+
 router.use(teacherAuthentication);
 
 router.delete("/:id", authentication, asyncHandler(examController.deleteExam));
 
 // exam router for teacher
-router.get("/search", asyncHandler(examController.searchExams));
 
 router.post("/create", asyncHandler(examController.createExam));
 
