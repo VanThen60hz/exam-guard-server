@@ -73,19 +73,16 @@ class ExamController {
     };
 
     searchExams = async (req, res, next) => {
-        const { query } = req.query;
-        const { page = 1, limit = 10 } = req.query;
+        const { query, status, page = 1, limit = 10 } = req.query;
         const filter = {};
         let responseData;
 
         if (req.role === "TEACHER") {
-            console.log("TEACHER 1 đã tới đây");
             const teacherId = req.userId;
             filter.teacher = teacherId;
+            if (status) filter.status = status;
             responseData = await examService.filterExamsForTeacher({ ...filter, query }, page, limit);
         } else {
-            console.log("TEACHER 2 đã tới đây");
-
             filter.status = "In Progress";
             responseData = await examService.filterExamsForStudent({ ...filter, query }, page, limit);
         }

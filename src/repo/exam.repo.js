@@ -51,12 +51,7 @@ class ExamRepo {
 
         const searchQuery = {
             ...additionalFilter,
-            $or: [
-                { title: { $regex: query, $options: "i" } },
-                { description: { $regex: query, $options: "i" } },
-                ...(isDate ? [{ startTime: query }, { endTime: query }] : []),
-                { status: { $regex: query, $options: "i" } },
-            ],
+            $or: [{ title: { $regex: query, $options: "i" } }, { description: { $regex: query, $options: "i" } }],
         };
 
         const totalExams = await examModel.countDocuments(searchQuery);

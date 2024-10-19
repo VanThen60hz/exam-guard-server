@@ -154,9 +154,9 @@ class ExamService {
     };
 
     static async filterExamsForTeacher(filter, page = 1, limit = 10) {
-        const { query, teacher: teacherId } = filter;
+        const { query, teacher: teacherId, status } = filter;
 
-        const { totalExams, exams } = await examRepo.filterExams(query, page, limit, { teacher: teacherId });
+        const { totalExams, exams } = await examRepo.filterExams(query, page, limit, { teacher: teacherId, status });
 
         const totalPages = Math.ceil(totalExams / limit);
 
