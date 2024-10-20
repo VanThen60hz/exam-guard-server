@@ -55,7 +55,11 @@ class QuestionController {
         try {
             const { examId } = req.params;
             const { page = 1, limit = 10 } = req.query;
-            const responseData = await questionService.listQuestions({ exam: examId }, page, limit);
+            let teacherId;
+            if (req.role === "TEACHER") {
+                teacherId = req.userId;
+            }
+            const responseData = await questionService.listQuestions({ exam: examId }, teacherId, page, limit);
 
             new SuccessResponse({
                 message: "List of questions retrieved successfully",

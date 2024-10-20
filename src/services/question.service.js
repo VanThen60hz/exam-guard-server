@@ -118,10 +118,15 @@ class QuestionService {
         return { message: "Question deleted successfully" };
     };
 
-    static listQuestions = async (filter = {}, page, limit) => {
+    static listQuestions = async (filter = {}, teacherId, page, limit) => {
+        const { exam: examId } = filter;
         const examToCheck = await examRepo.findExamById(examId);
-        if (!examToCheck || examToCheck.teacher._id.toString() !== teacherId) {
-            throw new UnauthorizedError("You are not authorized to update a question on this exam");
+        if (!examToCheck) {
+            throw new BadRequestError("Exam not found");
+        }
+
+        if (teacherId != null && examToCheck.teacher._id.toString() !== teacherId) {
+            throw new UnauthorizedError("You are not authorized to list a question on this exam");
         }
 
         const totalQuestions = await questionRepo.countQuestions(filter);
