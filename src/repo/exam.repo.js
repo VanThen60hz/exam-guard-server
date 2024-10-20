@@ -1,4 +1,5 @@
 "use strict";
+const { add } = require("lodash");
 const examModel = require("../models/exam.model");
 
 class ExamRepo {
