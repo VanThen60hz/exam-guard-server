@@ -35,49 +35,37 @@ class AnswerService {
             throw new BadRequestError("Question not found");
         }
 
-        const { answerText } = req.body;
-        if (!answerText) {
-            throw new BadRequestError("Answer text is required");
-        }
-
         const existingAnswer = await answerRepo.findAnswerByStudentAndQuestion(studentId, questionId);
 
-        if (existingAnswer) {
-            if (existingAnswer.answerText === answerText) {
+        if (!req.body || !req.body.answerText) {
+            if (existingAnswer) {
                 await answerRepo.deleteAnswer(existingAnswer._id);
                 return {
-                    message: "Answer deleted because it was the same as the previous answer.",
+                    message: "Answer existed deleted because you sent empty answer.",
                 };
             } else {
-                await answerRepo.deleteAnswer(existingAnswer._id);
-                const isCorrect = question.correctAnswer === answerText;
-
-                const newAnswerData = {
-                    answerText,
-                    isCorrect,
-                    student: studentId,
-                    question: questionId,
+                return {
+                    message: "No existing answer to delete.",
                 };
-
-                const newAnswer = await answerRepo.createAnswer(newAnswerData);
-
-                return getInfoData({
-                    fields: ["_id", "answerText", "isCorrect", "createdAt", "updatedAt"],
-                    object: newAnswer,
-                });
             }
+        }
+
+        const { answerText } = req.body;
+
+        if (existingAnswer) {
+            await answerRepo.deleteAnswer(existingAnswer._id);
         }
 
         const isCorrect = question.correctAnswer === answerText;
 
-        const answerData = {
+        const newAnswerData = {
             answerText,
             isCorrect,
             student: studentId,
             question: questionId,
         };
 
-        const newAnswer = await answerRepo.createAnswer(answerData);
+        const newAnswer = await answerRepo.createAnswer(newAnswerData);
 
         return getInfoData({
             fields: ["_id", "answerText", "isCorrect", "createdAt", "updatedAt"],
