@@ -12,7 +12,7 @@ const CheatingHistorySchema = new Schema(
             enum: ["Face", "Switch Tab", "Screen Capture"],
         },
         description: { type: String },
-        timeDetected: { type: Date, required: true, default: Date.now },
+        timeDetected: { type: Date, default: Date.now },
         student: {
             type: Schema.Types.ObjectId,
             required: true,
