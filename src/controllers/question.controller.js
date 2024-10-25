@@ -52,26 +52,22 @@ class QuestionController {
     };
 
     listQuestions = async (req, res, next) => {
-        try {
-            const { examId } = req.params;
-            const { page = 1, limit = 10 } = req.query;
-            let teacherId;
-            if (req.role === "TEACHER") {
-                teacherId = req.userId;
-            }
-            const responseData = await questionService.listQuestions({ exam: examId }, teacherId, page, limit);
-
-            new SuccessResponse({
-                message: "List of questions retrieved successfully",
-                metadata: {
-                    total: responseData.total,
-                    totalPages: responseData.totalPages,
-                    questions: responseData.questions,
-                },
-            }).send(res);
-        } catch (error) {
-            next(error);
+        const { examId } = req.params;
+        const { page = 1, limit = 10 } = req.query;
+        let teacherId;
+        if (req.role === "TEACHER") {
+            teacherId = req.userId;
         }
+        const responseData = await questionService.listQuestions({ exam: examId }, teacherId, page, limit);
+
+        new SuccessResponse({
+            message: "List of questions retrieved successfully",
+            metadata: {
+                total: responseData.total,
+                totalPages: responseData.totalPages,
+                questions: responseData.questions,
+            },
+        }).send(res);
     };
 
     searchQuestions = async (req, res, next) => {

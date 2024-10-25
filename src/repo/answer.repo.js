@@ -22,8 +22,8 @@ class AnswerRepo {
                 _id: answerId,
             })
             .select(select)
-            .populate("question")
-            .populate("student")
+            .populate("question", "questionText questionScore correctAnswer")
+            .populate("student", "_id username email name")
             .lean();
     }
 

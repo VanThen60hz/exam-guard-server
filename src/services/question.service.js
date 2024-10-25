@@ -37,7 +37,7 @@ class QuestionService {
         const examToCheck = await examRepo.findExamById(examId);
 
         if (!examToCheck || examToCheck.teacher._id.toString() !== teacherId) {
-            throw new UnauthorizedError("You are not authorized to add a question to this exam");
+            throw new ForbiddenError("You are not authorized to add a question to this exam");
         }
 
         const questionData = {
@@ -66,7 +66,7 @@ class QuestionService {
     static updateQuestion = async (examId, questionId, teacherId, questionBody) => {
         const examToCheck = await examRepo.findExamById(examId);
         if (!examToCheck || examToCheck.teacher._id.toString() !== teacherId) {
-            throw new UnauthorizedError("You are not authorized to update a question on this exam");
+            throw new ForbiddenError("You are not authorized to update a question on this exam");
         }
 
         const questionToUpdate = await questionRepo.findQuestionById(questionId);
@@ -102,7 +102,7 @@ class QuestionService {
     static deleteQuestion = async (examId, questionId, teacherId) => {
         const examToCheck = await examRepo.findExamById(examId);
         if (!examToCheck || examToCheck.teacher._id.toString() !== teacherId) {
-            throw new UnauthorizedError("You are not authorized to update a question on this exam");
+            throw new ForbiddenError("You are not authorized to delete this question");
         }
 
         const questionToDelete = await questionRepo.findQuestionById(questionId);
@@ -126,7 +126,7 @@ class QuestionService {
         }
 
         if (teacherId != null && examToCheck.teacher._id.toString() !== teacherId) {
-            throw new UnauthorizedError("You are not authorized to list a question on this exam");
+            throw new ForbiddenError("You are not authorized to list a question on this exam");
         }
 
         const totalQuestions = await questionRepo.countQuestions(filter);

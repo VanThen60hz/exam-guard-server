@@ -22,8 +22,8 @@ class CheatingHistoryRepo {
                 _id: cheatingHistoryId,
             })
             .select(select)
-            .populate("student")
-            .populate("exam")
+            .populate("student", "_id username email name")
+            .populate("exam", "_id title description")
             .lean();
     }
 
@@ -41,12 +41,12 @@ class CheatingHistoryRepo {
 
     static async listCheatingHistories(filter = {}, page = 1, limit = 10) {
         const skip = (page - 1) * limit;
+
         return await cheatingHistoryModel
             .find(filter)
             .skip(skip)
             .limit(limit)
-            .populate("student")
-            .populate("exam")
+            .populate("student", "_id username email name")
             .lean();
     }
 
@@ -65,8 +65,8 @@ class CheatingHistoryRepo {
             .find(searchQuery)
             .skip(skip)
             .limit(limit)
-            .populate("student")
-            .populate("exam")
+            .populate("student", "_id username email name")
+            .populate("exam", "_id title description")
             .lean();
 
         return { totalCheatingHistories, cheatingHistories };

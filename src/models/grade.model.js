@@ -12,12 +12,12 @@ const GradeSchema = new Schema(
             min: 0,
             max: 10,
         },
-        examId: {
+        exam: {
             type: Schema.Types.ObjectId,
             required: true,
             ref: "Exam",
         },
-        studentId: {
+        student: {
             type: Schema.Types.ObjectId,
             required: true,
             ref: "User",

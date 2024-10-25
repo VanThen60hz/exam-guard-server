@@ -7,8 +7,8 @@ class GradeRepo {
     constructor() {
         this.selectFields = {
             score: 1,
-            examId: 1,
-            studentId: 1,
+            exam: 1,
+            student: 1,
         };
     }
 
@@ -22,8 +22,8 @@ class GradeRepo {
                 _id: gradeId,
             })
             .select(select)
-            .populate("examId")
-            .populate("studentId")
+            .populate("exam")
+            .populate("student")
             .lean();
     }
 
@@ -41,7 +41,7 @@ class GradeRepo {
 
     static async listGrades(filter = {}, page = 1, limit = 10) {
         const skip = (page - 1) * limit;
-        return await gradeModel.find(filter).skip(skip).limit(limit).populate("examId").populate("studentId").lean();
+        return await gradeModel.find(filter).skip(skip).limit(limit).populate("exam").populate("student").lean();
     }
 
     static async filterGrades(query, page = 1, limit = 10) {
@@ -50,8 +50,8 @@ class GradeRepo {
         const searchQuery = {
             $or: [
                 { score: { $regex: query, $options: "i" } },
-                { examId: { $regex: query, $options: "i" } },
-                { studentId: { $regex: query, $options: "i" } },
+                { exam: { $regex: query, $options: "i" } },
+                { student: { $regex: query, $options: "i" } },
             ],
         };
 
@@ -60,8 +60,8 @@ class GradeRepo {
             .find(searchQuery)
             .skip(skip)
             .limit(limit)
-            .populate("examId")
-            .populate("studentId")
+            .populate("exam")
+            .populate("student")
             .lean();
 
         return { totalGrades, grades };
@@ -92,8 +92,8 @@ class GradeRepo {
 
             const grade = await gradeModel.create({
                 score: totalScore,
-                examId: examId,
-                studentId: studentId,
+                exam: examId,
+                student: studentId,
             });
 
             return grade;

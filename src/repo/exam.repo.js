@@ -25,7 +25,7 @@ class ExamRepo {
                 _id: examId,
             })
             .select(select)
-            .populate("teacher")
+            .populate("teacher", "_id username email name")
             .lean();
     }
 
@@ -43,7 +43,12 @@ class ExamRepo {
 
     static async listExams(filter = {}, page = 1, limit = 10) {
         const skip = (page - 1) * limit;
-        return await examModel.find(filter).skip(skip).limit(limit).populate("teacher").lean();
+        return await examModel
+            .find(filter)
+            .skip(skip)
+            .limit(limit)
+            .populate("teacher", "_id username email name")
+            .lean();
     }
 
     static async filterExams(query, page = 1, limit = 10, additionalFilter = {}) {

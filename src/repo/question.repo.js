@@ -23,7 +23,7 @@ class QuestionRepo {
                 _id: questionId,
             })
             .select(select)
-            .populate("exam")
+            .populate("exam", "_id title description")
             .lean();
     }
 
@@ -41,11 +41,16 @@ class QuestionRepo {
 
     static async listQuestions(filter = {}, page = 1, limit = 10) {
         const skip = (page - 1) * limit;
-        return await questionModel.find(filter).skip(skip).limit(limit).populate("exam").lean();
+        return await questionModel
+            .find(filter)
+            .skip(skip)
+            .limit(limit)
+            .populate("exam", "_id title description")
+            .lean();
     }
 
     static async findQuestionsByExam(examId) {
-        const questions = await questionModel.find({ exam: examId }).populate("exam").lean();
+        const questions = await questionModel.find({ exam: examId }).lean();
         return questions;
     }
 

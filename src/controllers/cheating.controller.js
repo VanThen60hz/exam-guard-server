@@ -26,7 +26,7 @@ class CheatingHistoryController {
         }
 
         const cheatingData = req.body;
-        const newCheatingHistory = await cheatingHistoryService.createCheatingHistory(cheatingData, studentId, examId);
+        const newCheatingHistory = await cheatingHistoryService.createCheatingHistory(cheatingData, examId, studentId);
 
         new SuccessResponse({
             message: "Cheating history created successfully",
@@ -36,11 +36,14 @@ class CheatingHistoryController {
 
     listCheatingHistories = async (req, res, next) => {
         const { examId } = req.params;
+
+        const teacherId = req.userId;
+
         if (!examId) {
             new BadRequestError("Exam ID is required").send(res);
         }
         const { page = 1, limit = 10 } = req.query;
-        const cheatingHistories = await cheatingHistoryService.listCheatingHistories(page, limit, examId);
+        const cheatingHistories = await cheatingHistoryService.listCheatingHistories(page, limit, examId, teacherId);
 
         new SuccessResponse({
             message: "List of cheating histories retrieved successfully",
@@ -53,12 +56,13 @@ class CheatingHistoryController {
 
     filterCheatingHistories = async (req, res, next) => {
         const { examId } = req.params;
+        const teacherId = req.userId;
         if (!examId) {
             new BadRequestError("Exam ID is required").send(res);
         }
 
         const { query, page = 1, limit = 10 } = req.query;
-        const response = await cheatingHistoryService.filterCheatingHistories(query, page, limit, examId);
+        const response = await cheatingHistoryService.filterCheatingHistories(query, page, limit, examId, teacherId);
 
         new SuccessResponse({
             message: "Filtered list of cheating histories retrieved successfully",

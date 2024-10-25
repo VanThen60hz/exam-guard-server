@@ -5,8 +5,15 @@ const { teacherAuthentication, authentication } = require("../../auth/authUtils"
 const cheatingController = require("../../controllers/cheating.controller");
 const router = express.Router();
 
-router.post("/:examId/detect-cheating", authentication, asyncHandler(cheatingController.detectCheating));
+router.post("/detect-cheating/:examId/", authentication, asyncHandler(cheatingController.detectCheating));
 
-router.get("/:id", authentication, asyncHandler(cheatingController.getCheatingHistoryById));
+router.use(teacherAuthentication);
+
+router.get("/list-cheating-histories/:examId", asyncHandler(cheatingController.listCheatingHistories));
+
+router.get(
+    "/list-cheating-histories-by-student/:examId/:studentId",
+    asyncHandler(cheatingController.listCheatingHistoriesByStudentId),
+);
 
 module.exports = router;

@@ -1,6 +1,7 @@
 "use strict";
 const { getInfoData } = require("../utils");
-const { BadRequestError } = require("../core/error.response");
+const { BadRequestError, UnauthorizedError, ForbiddenError } = require("../core/error.response");
+
 const cheatingHistoryRepo = require("../repo/cheatingHistory.repo");
 const examRepo = require("../repo/exam.repo");
 
@@ -9,6 +10,12 @@ class CheatingHistoryService {
         if (!studentId || !examId) {
             throw new BadRequestError("Student ID and Exam ID are required");
         }
+
+        const examToCheck = examRepo.findExamById(examId);
+        if (!examToCheck) {
+            throw new BadRequestError("Exam not found");
+        }
+
         const newCheatingHistoryData = {
             ...cheatingData,
             student: studentId,
@@ -42,14 +49,19 @@ class CheatingHistoryService {
         });
     }
 
-    static async listCheatingHistories(page = 1, limit = 10, examId = null) {
-        const examToCheck = examRepo.findExamById(examId);
+    static async listCheatingHistories(page = 1, limit = 10, examId = null, teacherId) {
+        const examToCheck = await examRepo.findExamById(examId);
         if (!examToCheck) {
             throw new BadRequestError("Exam not found");
         }
 
-        const filter = examId;
+        if (teacherId == null || examToCheck.teacher._id.toString() !== teacherId) {
+            throw new ForbiddenError("You are not authorized to list a cheating history on this exam");
+        }
+
+        const filter = { exam: examId };
         const cheatingHistories = await cheatingHistoryRepo.listCheatingHistories(filter, page, limit);
+
         return cheatingHistories.map((cheatingHistory) =>
             getInfoData({
                 fields: [
@@ -67,15 +79,14 @@ class CheatingHistoryService {
         );
     }
 
-    static async filterCheatingHistories(query, page = 1, limit = 10, examId) {
+    static async filterCheatingHistories(query, page = 1, limit = 10, examId, teacherId) {
         const examToCheck = examRepo.findExamById(examId);
         if (!examToCheck) {
             throw new BadRequestError("Exam not found");
         }
 
-        const filter = { ...query };
-        if (query.examId) {
-            filter.examId = query.examId;
+        if (teacherId == null || examToCheck.teacher._id.toString() !== teacherId) {
+            throw new ForbiddenError("You are not authorized to list a cheating history on this exam");
         }
 
         const { totalCheatingHistories, cheatingHistories } = await cheatingHistoryRepo.filterCheatingHistories(
@@ -109,7 +120,7 @@ class CheatingHistoryService {
     }
 
     static async listCheatingHistoriesByStudentId(studentId, page = 1, limit = 10, examId = null) {
-        const examToCheck = examRepo.findExamById(examId);
+        const examToCheck = await examRepo.findExamById(examId);
         if (!examToCheck) {
             throw new BadRequestError("Exam not found");
         }
