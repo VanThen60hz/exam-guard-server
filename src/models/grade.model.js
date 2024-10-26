@@ -29,6 +29,8 @@ const GradeSchema = new Schema(
     },
 );
 
+GradeSchema.index({ exam: 1, student: 1 });
+
 const Grade = mongoose.model(DOCUMENT_NAME, GradeSchema);
 
 module.exports = Grade;

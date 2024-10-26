@@ -32,6 +32,8 @@ const AnswerSchema = new Schema(
     },
 );
 
+AnswerSchema.index({ question: 1, student: 1 });
+
 const Answer = mongoose.model(DOCUMENT_NAME, AnswerSchema);
 
 module.exports = Answer;

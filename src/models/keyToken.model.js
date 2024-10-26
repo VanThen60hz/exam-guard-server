@@ -36,5 +36,7 @@ var keyTokenSchema = new Schema(
     },
 );
 
+keyTokenSchema.index({ user: 1, privateKey: 1, publicKey: 1 });
+
 //Export the model
 module.exports = model(DOCUMENT_NAME, keyTokenSchema);

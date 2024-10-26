@@ -29,5 +29,7 @@ var apiKeySchema = new Schema(
     },
 );
 
+apiKeySchema.index({ key: 1 });
+
 //Export the model
 module.exports = model(DOCUMENT_NAME, apiKeySchema);

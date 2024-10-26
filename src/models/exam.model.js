@@ -28,6 +28,8 @@ const ExamSchema = new Schema(
     },
 );
 
+ExamSchema.index({ teacher: 1, title: "text", status: 1 });
+
 const Exam = mongoose.model(DOCUMENT_NAME, ExamSchema);
 
 module.exports = Exam;

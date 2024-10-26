@@ -35,6 +35,8 @@ const QuestionSchema = new Schema(
     },
 );
 
+QuestionSchema.index({ exam: 1, questionType: 1, questionText: "text" });
+
 const Question = mongoose.model(DOCUMENT_NAME, QuestionSchema);
 
 module.exports = Question;

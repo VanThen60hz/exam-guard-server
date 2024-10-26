@@ -30,6 +30,8 @@ const CheatingHistorySchema = new Schema(
     },
 );
 
+CheatingHistorySchema.index({ student: 1, exam: 1, infractionType: 1 });
+
 const CheatingHistory = mongoose.model(DOCUMENT_NAME, CheatingHistorySchema);
 
 module.exports = CheatingHistory;
