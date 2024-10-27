@@ -6,11 +6,6 @@ const COLLECTION_NAME = "questions";
 
 const QuestionSchema = new Schema(
     {
-        exam: {
-            type: Schema.Types.ObjectId,
-            ref: "Exam",
-            required: true,
-        },
         questionText: {
             type: String,
             required: true,
@@ -28,6 +23,11 @@ const QuestionSchema = new Schema(
             type: String,
         },
         options: [String],
+        exam: {
+            type: Schema.Types.ObjectId,
+            ref: "Exam",
+            required: true,
+        },
     },
     {
         timestamps: true,

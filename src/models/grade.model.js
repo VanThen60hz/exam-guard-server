@@ -12,6 +12,9 @@ const GradeSchema = new Schema(
             min: 0,
             max: 10,
         },
+        feedback: {
+            type: String,
+        },
         exam: {
             type: Schema.Types.ObjectId,
             required: true,

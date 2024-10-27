@@ -6,11 +6,6 @@ const COLLECTION_NAME = "exams";
 
 const ExamSchema = new Schema(
     {
-        teacher: {
-            type: Schema.Types.ObjectId,
-            required: true,
-            ref: "User",
-        },
         title: { type: String, required: true },
         description: { type: String },
         startTime: { type: Date, required: true },
@@ -20,6 +15,11 @@ const ExamSchema = new Schema(
             required: true,
             enum: ["Scheduled", "In Progress", "Completed", "Cancelled"],
             default: "Scheduled",
+        },
+        teacher: {
+            type: Schema.Types.ObjectId,
+            required: true,
+            ref: "User",
         },
     },
     {
