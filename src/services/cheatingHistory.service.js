@@ -24,16 +24,7 @@ class CheatingHistoryService {
 
         const newCheatingHistory = await cheatingHistoryRepo.createCheatingHistory(newCheatingHistoryData);
         return getInfoData({
-            fields: [
-                "_id",
-                "infractionType",
-                "description",
-                "timeDetected",
-                "student",
-                "exam",
-                "createdAt",
-                "updatedAt",
-            ],
+            fields: ["_id", "infractionType", "description", "student", "exam", "createdAt", "updatedAt"],
             object: newCheatingHistory,
         });
     }
@@ -64,16 +55,7 @@ class CheatingHistoryService {
 
         return cheatingHistories.map((cheatingHistory) =>
             getInfoData({
-                fields: [
-                    "_id",
-                    "infractionType",
-                    "description",
-                    "timeDetected",
-                    "student",
-                    "examId",
-                    "createdAt",
-                    "updatedAt",
-                ],
+                fields: ["_id", "infractionType", "description", "student", "examId", "createdAt", "updatedAt"],
                 object: cheatingHistory,
             }),
         );
@@ -103,16 +85,7 @@ class CheatingHistoryService {
             totalPages,
             cheatingHistories: cheatingHistories.map((cheatingHistory) =>
                 getInfoData({
-                    fields: [
-                        "_id",
-                        "infractionType",
-                        "description",
-                        "timeDetected",
-                        "student",
-                        "examId",
-                        "createdAt",
-                        "updatedAt",
-                    ],
+                    fields: ["_id", "infractionType", "description", "student", "examId", "createdAt", "updatedAt"],
                     object: cheatingHistory,
                 }),
             ),
@@ -130,16 +103,7 @@ class CheatingHistoryService {
         const cheatingHistories = await cheatingHistoryRepo.listCheatingHistories(filter, page, limit);
         return cheatingHistories.map((cheatingHistory) =>
             getInfoData({
-                fields: [
-                    "_id",
-                    "infractionType",
-                    "description",
-                    "timeDetected",
-                    "student",
-                    "examId",
-                    "createdAt",
-                    "updatedAt",
-                ],
+                fields: ["_id", "infractionType", "description", "student", "examId", "createdAt", "updatedAt"],
                 object: cheatingHistory,
             }),
         );
