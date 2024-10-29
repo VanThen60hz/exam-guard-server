@@ -1,6 +1,7 @@
 "use strict";
 const { add } = require("lodash");
 const examModel = require("../models/exam.model");
+const questionRepo = require("./question.repo");
 
 class ExamRepo {
     constructor() {
@@ -43,27 +44,47 @@ class ExamRepo {
 
     static async listExams(filter = {}, page = 1, limit = 10) {
         const skip = (page - 1) * limit;
-        return await examModel
+        const exams = await examModel
             .find(filter)
             .skip(skip)
             .limit(limit)
             .populate("teacher", "_id username email name")
             .lean();
+
+        const examsWithQuestionCount = await Promise.all(
+            exams.map(async (exam) => {
+                const questionCount = await questionRepo.countQuestions({ exam: exam._id });
+                return { ...exam, questionCount };
+            }),
+        );
+
+        return examsWithQuestionCount;
     }
 
     static async filterExams(query, page = 1, limit = 10, additionalFilter = {}) {
         const skip = (page - 1) * limit;
-        const isDate = /^\d{4}-\d{2}-\d{2}$/.test(query);
-
         const searchQuery = {
             ...additionalFilter,
             $or: [{ title: { $regex: query, $options: "i" } }, { description: { $regex: query, $options: "i" } }],
         };
 
         const totalExams = await examModel.countDocuments(searchQuery);
-        const exams = await examModel.find(searchQuery).skip(skip).limit(limit).populate("teacher").lean();
+        const exams = await examModel
+            .find(searchQuery)
+            .skip(skip)
+            .limit(limit)
+            .populate("teacher", "_id username email name")
+            .lean();
 
-        return { totalExams, exams };
+        // For each exam, get the question count using questionRepo
+        const examsWithQuestionCount = await Promise.all(
+            exams.map(async (exam) => {
+                const questionCount = await questionRepo.countQuestions({ exam: exam._id });
+                return { ...exam, questionCount };
+            }),
+        );
+
+        return { totalExams, exams: examsWithQuestionCount };
     }
 }
 

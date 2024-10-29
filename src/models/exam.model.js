@@ -13,7 +13,7 @@ const ExamSchema = new Schema(
         status: {
             type: String,
             required: true,
-            enum: ["Scheduled", "In Progress", "Completed", "Cancelled"],
+            enum: ["Scheduled", "In Progress", "Completed", "Canceled"],
             default: "Scheduled",
         },
         teacher: {
