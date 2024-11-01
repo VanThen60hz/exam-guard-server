@@ -12,15 +12,15 @@ const CheatingHistorySchema = new Schema(
             enum: ["Face", "Switch Tab", "Screen Capture"],
         },
         description: { type: String },
-        student: {
-            type: Schema.Types.ObjectId,
-            required: true,
-            ref: "User",
-        },
         exam: {
             type: Schema.Types.ObjectId,
             required: true,
             ref: "Exam",
+        },
+        student: {
+            type: Schema.Types.ObjectId,
+            required: true,
+            ref: "User",
         },
     },
     {

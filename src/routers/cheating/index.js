@@ -2,7 +2,7 @@
 const express = require("express");
 const { asyncHandler } = require("../../helpers/asyncHandler");
 const { teacherAuthentication, authentication } = require("../../auth/authUtils");
-const cheatingController = require("../../controllers/cheating.controller");
+const cheatingController = require("../../controllers/cheatingHistory.controller");
 const router = express.Router();
 
 router.post("/detect-cheating/:examId/", authentication, asyncHandler(cheatingController.detectCheating));

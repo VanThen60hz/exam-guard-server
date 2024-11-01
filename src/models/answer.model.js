@@ -8,7 +8,6 @@ const AnswerSchema = new Schema(
     {
         answerText: {
             type: String,
-            required: true,
         },
         isCorrect: {
             type: Boolean,

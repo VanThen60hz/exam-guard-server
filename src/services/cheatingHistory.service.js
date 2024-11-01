@@ -3,6 +3,7 @@ const { getInfoData } = require("../utils");
 const { BadRequestError, UnauthorizedError, ForbiddenError } = require("../core/error.response");
 
 const cheatingHistoryRepo = require("../repo/cheatingHistory.repo");
+const cheatingStatisticRepo = require("../repo/cheatingStatistic.repo");
 const examRepo = require("../repo/exam.repo");
 
 class CheatingHistoryService {
@@ -11,7 +12,7 @@ class CheatingHistoryService {
             throw new BadRequestError("Student ID and Exam ID are required");
         }
 
-        const examToCheck = examRepo.findExamById(examId);
+        const examToCheck = await examRepo.findExamById(examId);
         if (!examToCheck) {
             throw new BadRequestError("Exam not found");
         }
@@ -21,6 +22,51 @@ class CheatingHistoryService {
             student: studentId,
             exam: examId,
         };
+
+        let cheatingStatistic = await cheatingStatisticRepo.findCheatingStatisticByExamAndStudent(examId, studentId);
+
+        if (!cheatingStatistic) {
+            const initialStatisticData = {
+                exam: examId,
+                student: studentId,
+                faceDetectionCount: 0,
+                tabSwitchCount: 0,
+                screenCaptureCount: 0,
+            };
+
+            switch (cheatingData.infractionType) {
+                case "Face":
+                    initialStatisticData.faceDetectionCount = 1;
+                    break;
+                case "Switch Tab":
+                    initialStatisticData.tabSwitchCount = 1;
+                    break;
+                case "Screen Capture":
+                    initialStatisticData.screenCaptureCount = 1;
+                    break;
+                default:
+                    throw new BadRequestError("Invalid infraction type");
+            }
+
+            cheatingStatistic = await cheatingStatisticRepo.createCheatingStatistic(initialStatisticData);
+        } else {
+            const updateData = {};
+            switch (cheatingData.infractionType) {
+                case "Face":
+                    updateData.faceDetectionCount = cheatingStatistic.faceDetectionCount + 1;
+                    break;
+                case "Switch Tab":
+                    updateData.tabSwitchCount = cheatingStatistic.tabSwitchCount + 1;
+                    break;
+                case "Screen Capture":
+                    updateData.screenCaptureCount = cheatingStatistic.screenCaptureCount + 1;
+                    break;
+                default:
+                    throw new BadRequestError("Invalid infraction type");
+            }
+
+            await cheatingStatisticRepo.updateCheatingStatistic(cheatingStatistic._id, updateData);
+        }
 
         const newCheatingHistory = await cheatingHistoryRepo.createCheatingHistory(newCheatingHistoryData);
         return getInfoData({
