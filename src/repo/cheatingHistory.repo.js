@@ -22,7 +22,7 @@ class CheatingHistoryRepo {
                 _id: cheatingHistoryId,
             })
             .select(select)
-            .populate("student", "_id username email name")
+            .populate("student", "_id username email name avatar")
             .populate("exam", "_id title description")
             .lean();
     }
@@ -46,7 +46,7 @@ class CheatingHistoryRepo {
             .find(filter)
             .skip(skip)
             .limit(limit)
-            .populate("student", "_id username email name")
+            .populate("student", "_id username email name avatar")
             .lean();
     }
 
@@ -65,7 +65,7 @@ class CheatingHistoryRepo {
             .find(searchQuery)
             .skip(skip)
             .limit(limit)
-            .populate("student", "_id username email name")
+            .populate("student", "_id username email name avatar")
             .populate("exam", "_id title description")
             .lean();
 

@@ -20,7 +20,7 @@ class CheatingStatisticRepo {
         return await cheatingStatisticModel
             .findOne({ _id: statisticId })
             .select(select)
-            .populate("student", "_id username email name")
+            .populate("student", "_id username email name avatar")
             .populate("exam", "_id title description")
             .lean();
     }
@@ -48,7 +48,7 @@ class CheatingStatisticRepo {
             .find(filter)
             .skip(skip)
             .limit(limit)
-            .populate("student", "_id username email name")
+            .populate("student", "_id username email name avatar")
             .populate("exam", "_id title description")
             .lean();
     }
@@ -65,7 +65,7 @@ class CheatingStatisticRepo {
             .find(searchQuery)
             .skip(skip)
             .limit(limit)
-            .populate("student", "_id username email name")
+            .populate("student", "_id username email name avatar")
             .populate("exam", "_id title description")
             .lean();
 
