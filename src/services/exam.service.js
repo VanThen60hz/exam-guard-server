@@ -235,6 +235,32 @@ class ExamService {
 
         return { message: "Exam completed successfully" };
     };
+
+    static submitExam = async (examId, userId, answers) => {
+        const exam = await examRepo.findExamById(examId);
+        if (!exam) {
+            throw new BadRequestError("Exam not found");
+        }
+
+        if (exam.teacher._id.toString() === userId) {
+            throw new UnauthorizedError("Teachers cannot submit exams");
+        }
+
+        const submittedExam = await examRepo.submitExam(examId, answers);
+        if (!submittedExam) {
+            throw new BadRequestError("Failed to submit exam");
+        }
+
+        const newGrade = await gradeRepo.createGrade({
+            student: userId,
+            exam: examId,
+            answers: submittedExam.answers,
+        });
+
+        console.log("New Grade:", newGrade);
+
+        return { message: "Exam submitted successfully" };
+    };
 }
 
 module.exports = ExamService;

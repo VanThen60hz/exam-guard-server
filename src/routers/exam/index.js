@@ -11,6 +11,8 @@ router.get("/list", authentication, asyncHandler(examController.listExams));
 
 router.get("/search", authentication, asyncHandler(examController.searchExams));
 
+router.post("/submit/:id", authentication, asyncHandler(examController.submitExam));
+
 router.use(teacherAuthentication);
 
 router.delete("/:id", authentication, asyncHandler(examController.deleteExam));
