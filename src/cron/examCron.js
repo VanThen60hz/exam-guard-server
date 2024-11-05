@@ -4,7 +4,7 @@ const examModel = require("../models/exam.model");
 
 const startExamCron = () => {
     cron.schedule("*/10 * * * * *", async () => {
-        const currentTimeVN = moment().tz("Asia/Ho_Chi_Minh").toDate();
+        const currentTimeVN = moment.utc().add(7, "hours").toDate();
 
         console.log("Running exam status update cron job at", moment(currentTimeVN).format("YYYY-MM-DD HH:mm:ss"));
 
