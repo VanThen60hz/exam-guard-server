@@ -5,6 +5,8 @@ const startExamCron = () => {
     cron.schedule("*/1 * * * *", async () => {
         const currentTime = new Date();
 
+        console.log("Running exam status update cron job at", currentTime);
+
         try {
             const scheduledExams = await examModel.find({
                 startTime: { $gt: currentTime },
