@@ -4,10 +4,11 @@ const examModel = require("../models/exam.model");
 
 const startExamCron = () => {
     cron.schedule("*/10 * * * * *", async () => {
-        // Get current time in Vietnamese timezone and convert to Date for MongoDB
         const currentTimeVN = moment().tz("Asia/Ho_Chi_Minh").toDate();
 
         console.log("Running exam status update cron job at", moment(currentTimeVN).format("YYYY-MM-DD HH:mm:ss"));
+
+        console.log(currentTimeVN);
 
         try {
             const scheduledExams = await examModel.find({
