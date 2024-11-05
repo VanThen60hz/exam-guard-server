@@ -1,9 +1,10 @@
 const cron = require("node-cron");
+const moment = require("moment-timezone");
 const examModel = require("../models/exam.model");
 
 const startExamCron = () => {
     cron.schedule("*/1 * * * *", async () => {
-        const currentTime = new Date();
+        const currentTime = moment().tz("Asia/Ho_Chi_Minh").toDate();
 
         console.log("Running exam status update cron job at", currentTime);
 
