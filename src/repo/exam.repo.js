@@ -87,26 +87,8 @@ class ExamRepo {
         return { totalExams, exams: examsWithQuestionCount };
     }
 
-    static async submitExam(examId, studentId, answers) {
-        const exam = await examModel.findById(examId);
-        const { question } = exam;
-
-        const score = answers.reduce((total, answer) => {
-            const questionData = question.find((q) => q._id.toString() === answer.question.toString());
-            if (questionData.correctAnswer === answer.answer) {
-                return total + 1;
-            }
-            return total;
-        }, 0);
-
-        const examData = {
-            student: studentId,
-            exam: examId,
-            answers,
-            score,
-        };
-
-        return await examModel.create(examData);
+    static async submitExam(examId, answers) {
+        return { exam: examId, answers };
     }
 }
 

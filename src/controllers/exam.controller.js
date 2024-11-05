@@ -108,13 +108,18 @@ class ExamController {
     };
 
     submitExam = async (req, res, next) => {
-        const { id } = req.params;
-        const userId = req.userId;
-        const response = await examService.submitExam(id, userId, req.body);
+        try {
+            const { id: examId } = req.params;
+            const userId = req.userId;
+            const response = await examService.submitExam(examId, userId, req.body.answers);
 
-        new SuccessResponse({
-            message: response.message,
-        }).send(res);
+            new SuccessResponse({
+                message: response.message,
+                grade: response.newGrade,
+            }).send(res);
+        } catch (error) {
+            next(error);
+        }
     };
 }
 

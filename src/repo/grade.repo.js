@@ -102,6 +102,10 @@ class GradeRepo {
             throw error;
         }
     }
+
+    static async findGradeByStudentAndExam(studentId, examId) {
+        return await gradeModel.findOne({ student: studentId, exam: examId }).lean();
+    }
 }
 
 module.exports = GradeRepo;

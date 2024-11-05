@@ -2,7 +2,9 @@
 const { getInfoData } = require("../utils");
 const { BadRequestError, UnauthorizedError, ForbiddenError } = require("../core/error.response");
 const examRepo = require("../repo/exam.repo");
-const gradeRepo = require("../repo/exam.repo");
+const gradeRepo = require("../repo/grade.repo");
+const questionRepo = require("../repo/question.repo");
+const answerRepo = require("../repo/answer.repo");
 
 class ExamService {
     static findExamById = async (examId, userId) => {
@@ -236,31 +238,79 @@ class ExamService {
         return { message: "Exam completed successfully" };
     };
 
-    static submitExam = async (examId, userId, answers) => {
+    static async submitExam(examId, studentId, answers) {
         const exam = await examRepo.findExamById(examId);
         if (!exam) {
             throw new BadRequestError("Exam not found");
         }
 
-        if (exam.teacher._id.toString() === userId) {
+        if (exam.teacher._id.toString() === studentId) {
             throw new UnauthorizedError("Teachers cannot submit exams");
         }
 
-        const submittedExam = await examRepo.submitExam(examId, answers);
-        if (!submittedExam) {
-            throw new BadRequestError("Failed to submit exam");
+        const existingGrade = await gradeRepo.findGradeByStudentAndExam(studentId, examId);
+        if (existingGrade) {
+            throw new BadRequestError("You have already submitted this exam.");
+        }
+
+        const questions = await questionRepo.findQuestionsByExam(examId);
+        if (!questions || questions.length === 0) {
+            throw new BadRequestError("No questions found for this exam");
+        }
+
+        const questionIds = questions.map((q) => q._id);
+        const existingAnswers = await answerRepo.findAnswersByStudentAndQuestions(studentId, questionIds);
+
+        const existingAnswersMap = existingAnswers.reduce((map, ans) => {
+            map[ans.question.toString()] = ans;
+            return map;
+        }, {});
+
+        const newAnswers = [];
+        const updatedAnswers = [];
+
+        const score = answers.reduce((total, answer) => {
+            const questionData = questions.find((q) => q._id.toString() === answer.question.toString());
+
+            if (!questionData) return total;
+
+            const isCorrect = questionData.correctAnswer === answer.answer;
+            const answerData = {
+                answerText: answer.answer,
+                isCorrect,
+                question: answer.question,
+                student: studentId,
+            };
+
+            if (existingAnswersMap[answer.question]) {
+                const existingAnswer = existingAnswersMap[answer.question];
+                existingAnswer.answerText = answerData.answerText;
+                existingAnswer.isCorrect = answerData.isCorrect;
+                updatedAnswers.push(existingAnswer);
+            } else {
+                newAnswers.push(answerData);
+            }
+
+            return isCorrect ? total + questionData.questionScore : total;
+        }, 0);
+
+        if (newAnswers.length > 0) {
+            await answerRepo.insertManyAnswers(newAnswers);
+        }
+
+        if (updatedAnswers.length > 0) {
+            await Promise.all(updatedAnswers.map((answer) => answerRepo.updateAnswer(answer)));
         }
 
         const newGrade = await gradeRepo.createGrade({
-            student: userId,
+            student: studentId,
             exam: examId,
-            answers: submittedExam.answers,
+            score,
+            feedback: "Exam graded successfully",
         });
 
-        console.log("New Grade:", newGrade);
-
-        return { message: "Exam submitted successfully" };
-    };
+        return { message: "Exam submitted successfully", newGrade };
+    }
 }
 
 module.exports = ExamService;

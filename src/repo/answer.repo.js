@@ -83,6 +83,23 @@ class AnswerRepo {
         const skip = (page - 1) * limit;
         return await answerModel.find(filter).skip(skip).limit(limit).lean();
     }
+
+    static async findAnswersByStudentAndQuestions(studentId, questionIds) {
+        return await answerModel
+            .find({
+                student: studentId,
+                question: { $in: questionIds },
+            })
+            .lean();
+    }
+
+    static async insertManyAnswers(newAnswers) {
+        return await answerModel.insertMany(newAnswers);
+    }
+
+    static async updateAnswer(answer) {
+        return await answerModel.findByIdAndUpdate(answer._id, answer, { new: true });
+    }
 }
 
 module.exports = AnswerRepo;
