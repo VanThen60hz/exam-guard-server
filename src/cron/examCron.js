@@ -7,17 +7,17 @@ const startExamCron = () => {
 
         try {
             const scheduledUpdate = await examModel.updateMany(
-                { startTime: { $gt: currentTime } },
+                { startTime: { $gt: currentTime }, status: { $ne: "Scheduled" } },
                 { $set: { status: "Scheduled" } },
             );
 
             const inProgressUpdate = await examModel.updateMany(
-                { startTime: { $lt: currentTime }, endTime: { $gt: currentTime } },
+                { startTime: { $lt: currentTime }, endTime: { $gt: currentTime }, status: { $ne: "In Progress" } },
                 { $set: { status: "In Progress" } },
             );
 
             const completedUpdate = await examModel.updateMany(
-                { endTime: { $lt: currentTime } },
+                { endTime: { $lt: currentTime }, status: { $ne: "Completed" } },
                 { $set: { status: "Completed" } },
             );
         } catch (error) {

@@ -5,12 +5,12 @@ import sys
 
 fake = Faker()
 
-url = "http://localhost:8000/api/user/create"
+url = "https://exam-guard-server.onrender.com/api/user/create"
 
 
 headers = {
-    'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzBhMDkzZDEyOWM3OGU1MWE2ODYwNTgiLCJlbWFpbCI6Im5ndXllbnZhbmFkbWluQGV4YW1wbGUuY29tIiwiaWF0IjoxNzI4NzEwOTczLCJleHAiOjE3Mjg4ODM3NzN9.zLTh0KBVZW0M4Ktz7hd3cP0wXm8Va2TqIrK4v3rOCJk',
-    'x-client-id': '670a093d129c78e51a686058',
+    'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzJhM2U2ZTFmMzJjOTI5Yjg0OTg5MmQiLCJlbWFpbCI6Im5ndXllbnZhbmFkbWluQGV4YW1wbGUuY29tIiwiaWF0IjoxNzMwODIyMjk3LCJleHAiOjE3MzEyNTQyOTd9.GYT8wLIbMDSfSl9wSXbRJm3v7umdiV1tcKdbmOWy1nY',
+    'x-client-id': '672a3e6e1f32c929b849892d',
     'Content-Type': 'application/json'
 }
 
@@ -21,7 +21,7 @@ except (IndexError, ValueError):
     sys.exit(1)
 
 
-password = "securepassword123"
+password = "123"
 
 
 def generate_random_user():
