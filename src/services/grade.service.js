@@ -2,6 +2,7 @@
 const { getInfoData } = require("../utils");
 const { BadRequestError, UnauthorizedError, ForbiddenError } = require("../core/error.response");
 const gradeRepo = require("../repo/grade.repo");
+const examRepo = require("../repo/exam.repo");
 
 class GradeService {
     static findGradeById = async (gradeId, userId) => {
@@ -68,10 +69,14 @@ class GradeService {
         return { message: "Grade deleted successfully" };
     };
 
-    static listGrades = async (filter = {}, page, limit) => {
+    static async listGradesByExamId(examId, teacherId, page = 1, limit = 10) {
+        await this.verifyExamOwnership(examId, teacherId);
+
+        const filter = { exam: examId };
         const totalGrades = await gradeRepo.countGrades(filter);
         const grades = await gradeRepo.listGrades(filter, page, limit);
         const totalPages = Math.ceil(totalGrades / limit);
+
         return {
             total: totalGrades,
             totalPages,
@@ -82,18 +87,24 @@ class GradeService {
                 }),
             ),
         };
-    };
+    }
 
-    static listGradesForStudent = async (studentId, page = 1, limit = 10) => {
-        if (!studentId) {
-            throw new BadRequestError("Student ID is required");
+    static async verifyExamOwnership(examId, teacherId) {
+        const exam = await examRepo.findExamById(examId);
+        if (!exam) {
+            throw new BadRequestError("Exam not found");
         }
+        if (exam.teacher.toString() !== teacherId) {
+            throw new UnauthorizedError("You are not authorized to view grades for this exam");
+        }
+        return exam;
+    }
 
-        const filter = { student: studentId };
+    static async searchGradesByExamId(examId, query, teacherId, page = 1, limit = 10) {
+        await this.verifyExamOwnership(examId, teacherId);
 
-        const totalGrades = await gradeRepo.countGrades(filter);
-
-        const grades = await gradeRepo.listGrades(filter, page, limit);
+        const filter = { exam: examId, $text: { $search: query } };
+        const { totalGrades, grades } = await gradeRepo.filterGrades(filter, page, limit);
         const totalPages = Math.ceil(totalGrades / limit);
 
         return {
@@ -106,7 +117,7 @@ class GradeService {
                 }),
             ),
         };
-    };
+    }
 
     static filterGrades = async (query, page, limit) => {
         console.log("Query:", query);
@@ -124,6 +135,19 @@ class GradeService {
             ),
         };
     };
+
+    static async viewGrade(examId, studentId) {
+        const grade = await gradeRepo.findGradeByStudentAndExam(studentId, examId);
+
+        if (!grade) {
+            throw new BadRequestError("Grade not found for this exam");
+        }
+
+        return getInfoData({
+            fields: ["_id", "score", "exam", "student", "createdAt", "updatedAt"],
+            object: grade,
+        });
+    }
 
     static calculateGradeForStudent = async (examId, studentId) => {
         const grade = await gradeRepo.calculateGradeForStudent(examId, studentId);

@@ -43,49 +43,73 @@ class GradeController {
         }).send(res);
     };
 
-    listGrades = async (req, res, next) => {
-        try {
-            const { student, status, page = 1, limit = 10 } = req.query;
-            const filter = {
-                ...(status && { status }),
-            };
-
-            let responseData;
-            console.log("Role:", req.role);
-
-            if (req.role === "TEACHER") {
-                const teacherId = req.userId;
-                responseData = await gradeService.listGradesForTeacher(teacherId, page, limit);
-            } else {
-                if (student) filter.student = student;
-                responseData = await gradeService.listGrades(filter, page, limit);
-            }
-
-            new SuccessResponse({
-                message: "List of grades retrieved successfully",
-                metadata: {
-                    total: responseData.total,
-                    totalPages: responseData.totalPages,
-                    grades: responseData.grades,
-                },
-            }).send(res);
-        } catch (error) {
-            next(error);
-        }
-    };
-
-    searchGrades = async (req, res, next) => {
-        const { query } = req.query;
+    listGradesByExamId = async (req, res, next) => {
+        const { examId } = req.params;
         const { page = 1, limit = 10 } = req.query;
-        const { total, totalPages, grades } = await gradeService.filterGrades(query, page, limit);
+
+        if (!examId) {
+            throw new BadRequestError("Exam ID is required");
+        }
+
+        if (req.role !== "TEACHER") {
+            throw new UnauthorizedError("Only teachers can access grades by exam ID");
+        }
+
+        const teacherId = req.userId;
+        const responseData = await gradeService.listGradesByExamId(examId, teacherId, page, limit);
 
         new SuccessResponse({
-            message: "Search results retrieved successfully",
+            message: "List of grades for exam retrieved successfully",
             metadata: {
-                total,
-                totalPages,
-                grades,
+                total: responseData.total,
+                totalPages: responseData.totalPages,
+                grades: responseData.grades,
             },
+        }).send(res);
+    };
+
+    searchGradesByExamId = async (req, res, next) => {
+        const { examId } = req.params;
+        const { query, page = 1, limit = 10 } = req.query;
+
+        if (!examId) {
+            throw new BadRequestError("Exam ID is required");
+        }
+
+        if (req.role !== "TEACHER") {
+            throw new UnauthorizedError("Only teachers can access grades by exam ID");
+        }
+
+        const teacherId = req.userId;
+        const responseData = await gradeService.searchGradesByExamId(examId, query, teacherId, page, limit);
+
+        new SuccessResponse({
+            message: "Search results for grades retrieved successfully",
+            metadata: {
+                total: responseData.total,
+                totalPages: responseData.totalPages,
+                grades: responseData.grades,
+            },
+        }).send(res);
+    };
+
+    viewGrade = async (req, res, next) => {
+        const { examId } = req.params;
+
+        if (!examId) {
+            throw new BadRequestError("Exam ID is required");
+        }
+
+        if (req.role !== "STUDENT") {
+            throw new UnauthorizedError("Only students can view their grades");
+        }
+
+        const studentId = req.userId;
+        const gradeData = await gradeService.viewGrade(examId, studentId);
+
+        new SuccessResponse({
+            message: "Grade for exam retrieved successfully",
+            metadata: gradeData,
         }).send(res);
     };
 }
