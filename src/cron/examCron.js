@@ -6,20 +6,51 @@ const startExamCron = () => {
         const currentTime = new Date();
 
         try {
-            const scheduledUpdate = await examModel.updateMany(
-                { startTime: { $gt: currentTime }, status: { $ne: "Scheduled" } },
-                { $set: { status: "Scheduled" } },
-            );
+            const scheduledExams = await examModel.find({
+                startTime: { $gt: currentTime },
+                status: { $ne: "Scheduled" },
+            });
+            if (scheduledExams.length > 0) {
+                await examModel.updateMany(
+                    { _id: { $in: scheduledExams.map((exam) => exam._id) } },
+                    { $set: { status: "Scheduled" } },
+                );
+                console.log(
+                    "Scheduled exams:",
+                    scheduledExams.map((exam) => exam._id),
+                );
+            }
 
-            const inProgressUpdate = await examModel.updateMany(
-                { startTime: { $lt: currentTime }, endTime: { $gt: currentTime }, status: { $ne: "In Progress" } },
-                { $set: { status: "In Progress" } },
-            );
+            const inProgressExams = await examModel.find({
+                startTime: { $lt: currentTime },
+                endTime: { $gt: currentTime },
+                status: { $ne: "In Progress" },
+            });
+            if (inProgressExams.length > 0) {
+                await examModel.updateMany(
+                    { _id: { $in: inProgressExams.map((exam) => exam._id) } },
+                    { $set: { status: "In Progress" } },
+                );
+                console.log(
+                    "In Progress exams:",
+                    inProgressExams.map((exam) => exam._id),
+                );
+            }
 
-            const completedUpdate = await examModel.updateMany(
-                { endTime: { $lt: currentTime }, status: { $ne: "Completed" } },
-                { $set: { status: "Completed" } },
-            );
+            const completedExams = await examModel.find({
+                endTime: { $lt: currentTime },
+                status: { $ne: "Completed" },
+            });
+            if (completedExams.length > 0) {
+                await examModel.updateMany(
+                    { _id: { $in: completedExams.map((exam) => exam._id) } },
+                    { $set: { status: "Completed" } },
+                );
+                console.log(
+                    "Completed exams:",
+                    completedExams.map((exam) => exam._id),
+                );
+            }
         } catch (error) {
             console.error("Error updating exam statuses:", error);
         }
