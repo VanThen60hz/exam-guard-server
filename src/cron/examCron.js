@@ -6,12 +6,11 @@ const startExamCron = () => {
     cron.schedule("*/10 * * * * *", async () => {
         const currentTime = moment().tz("Asia/Ho_Chi_Minh");
 
-        console.log(currentTime);
         console.log("Running exam status update cron job at", currentTime.format("YYYY-MM-DD HH:mm:ss"));
 
         try {
             const scheduledExams = await examModel.find({
-                startTime: { $gt: currentTime.toDate() },
+                startTime: { $gt: currentTime.utc().toDate() },
                 status: { $ne: "Scheduled" },
             });
             if (scheduledExams.length > 0) {
@@ -26,8 +25,8 @@ const startExamCron = () => {
             }
 
             const inProgressExams = await examModel.find({
-                startTime: { $lt: currentTime.toDate() },
-                endTime: { $gt: currentTime.toDate() },
+                startTime: { $lt: currentTime.utc().toDate() },
+                endTime: { $gt: currentTime.utc().toDate() },
                 status: { $ne: "In Progress" },
             });
             if (inProgressExams.length > 0) {
@@ -42,7 +41,7 @@ const startExamCron = () => {
             }
 
             const completedExams = await examModel.find({
-                endTime: { $lt: currentTime.toDate() },
+                endTime: { $lt: currentTime.utc().toDate() },
                 status: { $ne: "Completed" },
             });
             if (completedExams.length > 0) {
