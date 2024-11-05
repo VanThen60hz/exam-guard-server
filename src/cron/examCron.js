@@ -4,13 +4,14 @@ const examModel = require("../models/exam.model");
 
 const startExamCron = () => {
     cron.schedule("*/10 * * * * *", async () => {
-        const currentTime = moment().tz("Asia/Ho_Chi_Minh");
+        // Get current time in Vietnamese timezone and convert to Date for MongoDB
+        const currentTimeVN = moment().tz("Asia/Ho_Chi_Minh").toDate();
 
-        console.log("Running exam status update cron job at", currentTime.format("YYYY-MM-DD HH:mm:ss"));
+        console.log("Running exam status update cron job at", moment(currentTimeVN).format("YYYY-MM-DD HH:mm:ss"));
 
         try {
             const scheduledExams = await examModel.find({
-                startTime: { $gt: currentTime.utc().toDate() },
+                startTime: { $gt: currentTimeVN },
                 status: { $ne: "Scheduled" },
             });
             if (scheduledExams.length > 0) {
@@ -25,8 +26,8 @@ const startExamCron = () => {
             }
 
             const inProgressExams = await examModel.find({
-                startTime: { $lt: currentTime.utc().toDate() },
-                endTime: { $gt: currentTime.utc().toDate() },
+                startTime: { $lt: currentTimeVN },
+                endTime: { $gt: currentTimeVN },
                 status: { $ne: "In Progress" },
             });
             if (inProgressExams.length > 0) {
@@ -41,7 +42,7 @@ const startExamCron = () => {
             }
 
             const completedExams = await examModel.find({
-                endTime: { $lt: currentTime.utc().toDate() },
+                endTime: { $lt: currentTimeVN },
                 status: { $ne: "Completed" },
             });
             if (completedExams.length > 0) {
