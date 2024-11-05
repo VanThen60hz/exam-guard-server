@@ -1,9 +1,9 @@
 "use strict";
 
 const mongoose = require("mongoose");
-const {
-    db: { host, name, port },
-} = require("../configs/config.mongodb");
+// const {
+//     db: { host, name, port },
+// } = require("../configs/config.mongodb");
 
 // const connectString = `mongodb://${host}:${port}/${name}`;
 const connectString = `mongodb+srv://nguyenvthang2409:E00z60hz@mongo-cluster.i9hqpgd.mongodb.net/examguardPROD?retryWrites=true&w=majority&appName=mongo-cluster`;
