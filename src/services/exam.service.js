@@ -248,6 +248,8 @@ class ExamService {
             throw new UnauthorizedError("Teachers cannot submit exams");
         }
 
+        if (!answers || answers.length === 0) answers = [];
+
         const existingGrade = await gradeRepo.findGradeByStudentAndExam(studentId, examId);
         if (existingGrade) {
             throw new BadRequestError("You have already submitted this exam.");
@@ -269,26 +271,34 @@ class ExamService {
         const newAnswers = [];
         const updatedAnswers = [];
 
-        const score = answers.reduce((total, answer) => {
-            const questionData = questions.find((q) => q._id.toString() === answer.question.toString());
+        const score = questions.reduce((total, questionData) => {
+            const submittedAnswer = answers.find((a) => a.question.toString() === questionData._id.toString());
+            const existingAnswer = existingAnswersMap[questionData._id.toString()];
 
-            if (!questionData) return total;
+            let isCorrect = false;
+            let answerText = "";
 
-            const isCorrect = questionData.correctAnswer === answer.answer;
-            const answerData = {
-                answerText: answer.answer,
-                isCorrect,
-                question: answer.question,
-                student: studentId,
-            };
+            if (submittedAnswer) {
+                answerText = submittedAnswer.answer;
+                isCorrect = questionData.correctAnswer === submittedAnswer.answer;
 
-            if (existingAnswersMap[answer.question]) {
-                const existingAnswer = existingAnswersMap[answer.question];
-                existingAnswer.answerText = answerData.answerText;
-                existingAnswer.isCorrect = answerData.isCorrect;
-                updatedAnswers.push(existingAnswer);
-            } else {
-                newAnswers.push(answerData);
+                const answerData = {
+                    answerText,
+                    isCorrect,
+                    question: questionData._id,
+                    student: studentId,
+                };
+
+                if (existingAnswer) {
+                    existingAnswer.answerText = answerData.answerText;
+                    existingAnswer.isCorrect = answerData.isCorrect;
+                    updatedAnswers.push(existingAnswer);
+                } else {
+                    newAnswers.push(answerData);
+                }
+            } else if (existingAnswer) {
+                answerText = existingAnswer.answerText;
+                isCorrect = existingAnswer.isCorrect;
             }
 
             return isCorrect ? total + questionData.questionScore : total;
