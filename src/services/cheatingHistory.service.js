@@ -1,13 +1,40 @@
 "use strict";
+
+const amqp = require("amqplib");
 const { getInfoData } = require("../utils");
 const { BadRequestError, UnauthorizedError, ForbiddenError } = require("../core/error.response");
 
+const CheatingStatisticService = require("./cheatingStatistic.service");
 const cheatingHistoryRepo = require("../repo/cheatingHistory.repo");
 const cheatingStatisticRepo = require("../repo/cheatingStatistic.repo");
 const examRepo = require("../repo/exam.repo");
+const { cheatingResolve } = require("../resolvers/cheating.resolve");
 
 class CheatingHistoryService {
     static async createCheatingHistory(cheatingData, examId, studentId) {
+        // Bước 1: Xác thực dữ liệu
+        await this.validateData(examId, studentId);
+
+        // Bước 2: Cập nhật hoặc tạo thống kê gian lận
+        const cheatingStatistic = await CheatingStatisticService.updateCheatingStatistic(
+            cheatingData,
+            examId,
+            studentId,
+        );
+
+        // Bước 3: Tạo bản ghi lịch sử gian lận
+        const newCheatingHistory = await this.createHistoryEntry(cheatingData, examId, studentId);
+
+        // Bước 4: Gửi thông báo qua RabbitMQ với dữ liệu Cheating Statistic
+        await cheatingResolve(cheatingStatistic);
+
+        return getInfoData({
+            fields: ["_id", "infractionType", "description", "student", "exam", "createdAt", "updatedAt"],
+            object: newCheatingHistory,
+        });
+    }
+
+    static async validateData(examId, studentId) {
         if (!studentId || !examId) {
             throw new BadRequestError("Student ID and Exam ID are required");
         }
@@ -16,63 +43,16 @@ class CheatingHistoryService {
         if (!examToCheck) {
             throw new BadRequestError("Exam not found");
         }
+    }
 
+    static async createHistoryEntry(cheatingData, examId, studentId) {
         const newCheatingHistoryData = {
             ...cheatingData,
             student: studentId,
             exam: examId,
         };
 
-        let cheatingStatistic = await cheatingStatisticRepo.findCheatingStatisticByExamAndStudent(examId, studentId);
-
-        if (!cheatingStatistic) {
-            const initialStatisticData = {
-                exam: examId,
-                student: studentId,
-                faceDetectionCount: 0,
-                tabSwitchCount: 0,
-                screenCaptureCount: 0,
-            };
-
-            switch (cheatingData.infractionType) {
-                case "Face":
-                    initialStatisticData.faceDetectionCount = 1;
-                    break;
-                case "Switch Tab":
-                    initialStatisticData.tabSwitchCount = 1;
-                    break;
-                case "Screen Capture":
-                    initialStatisticData.screenCaptureCount = 1;
-                    break;
-                default:
-                    throw new BadRequestError("Invalid infraction type");
-            }
-
-            cheatingStatistic = await cheatingStatisticRepo.createCheatingStatistic(initialStatisticData);
-        } else {
-            const updateData = {};
-            switch (cheatingData.infractionType) {
-                case "Face":
-                    updateData.faceDetectionCount = cheatingStatistic.faceDetectionCount + 1;
-                    break;
-                case "Switch Tab":
-                    updateData.tabSwitchCount = cheatingStatistic.tabSwitchCount + 1;
-                    break;
-                case "Screen Capture":
-                    updateData.screenCaptureCount = cheatingStatistic.screenCaptureCount + 1;
-                    break;
-                default:
-                    throw new BadRequestError("Invalid infraction type");
-            }
-
-            await cheatingStatisticRepo.updateCheatingStatistic(cheatingStatistic._id, updateData);
-        }
-
-        const newCheatingHistory = await cheatingHistoryRepo.createCheatingHistory(newCheatingHistoryData);
-        return getInfoData({
-            fields: ["_id", "infractionType", "description", "student", "exam", "createdAt", "updatedAt"],
-            object: newCheatingHistory,
-        });
+        return await cheatingHistoryRepo.createCheatingHistory(newCheatingHistoryData);
     }
 
     static async findCheatingHistoryById(cheatingHistoryId) {
