@@ -15,18 +15,18 @@ class CheatingHistoryService {
         // Bước 1: Xác thực dữ liệu
         await this.validateData(examId, studentId);
 
-        // Bước 2: Cập nhật hoặc tạo thống kê gian lận
+        // Bước 2: Tạo bản ghi lịch sử gian lận
+        const newCheatingHistory = await this.createHistoryEntry(cheatingData, examId, studentId);
+
+        // Bước 3: Cập nhật hoặc tạo thống kê gian lận
         const cheatingStatistic = await CheatingStatisticService.updateCheatingStatistic(
             cheatingData,
             examId,
             studentId,
         );
 
-        // Bước 3: Tạo bản ghi lịch sử gian lận
-        const newCheatingHistory = await this.createHistoryEntry(cheatingData, examId, studentId);
-
         // Bước 4: Gửi thông báo qua RabbitMQ với dữ liệu Cheating Statistic
-        await cheatingResolve(cheatingStatistic);
+        cheatingResolve(cheatingStatistic);
 
         return getInfoData({
             fields: ["_id", "infractionType", "description", "student", "exam", "createdAt", "updatedAt"],
