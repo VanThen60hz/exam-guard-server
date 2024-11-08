@@ -55,7 +55,12 @@ class AccessService {
         status,
     }) => {
         // Step 1: Check if email exists
-        const existingUser = await userModel.findOne({ email }).lean();
+        const existingUser = await userModel
+            .findOne({
+                $or: [{ email }, { username }],
+            })
+            .lean();
+
         if (existingUser) {
             throw new BadRequestError("User already registered");
         }

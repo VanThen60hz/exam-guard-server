@@ -4,6 +4,7 @@ const { BadRequestError, ForbiddenError } = require("../core/error.response");
 
 const cheatingStatisticRepo = require("../repo/cheatingStatistic.repo");
 const examRepo = require("../repo/exam.repo");
+const { getInfractionHandler } = require("../strategies/InfractionStrategy");
 
 class CheatingStatisticService {
     static async createCheatingStatistic(statisticData, examId, studentId) {
@@ -151,6 +152,43 @@ class CheatingStatisticService {
                 object: statistic,
             }),
         );
+    }
+
+    static async updateCheatingStatistic(cheatingData, examId, studentId) {
+        const handler = getInfractionHandler(cheatingData.infractionType);
+
+        let cheatingStatistic = await cheatingStatisticRepo.findCheatingStatisticByExamAndStudent(examId, studentId);
+
+        if (!cheatingStatistic) {
+            const initialStatisticData = {
+                exam: examId,
+                student: studentId,
+                faceDetectionCount: 0,
+                tabSwitchCount: 0,
+                screenCaptureCount: 0,
+                ...handler.getInitialData(),
+            };
+
+            cheatingStatistic = await cheatingStatisticRepo.createCheatingStatistic(initialStatisticData);
+        } else {
+            const updateData = handler.handleUpdate(cheatingStatistic);
+            await cheatingStatisticRepo.updateCheatingStatistic(cheatingStatistic._id, updateData);
+            cheatingStatistic = { ...cheatingStatistic._doc, ...updateData };
+        }
+
+        return getInfoData({
+            fields: [
+                "_id",
+                "exam",
+                "student",
+                "faceDetectionCount",
+                "tabSwitchCount",
+                "screenCaptureCount",
+                "createdAt",
+                "updatedAt",
+            ],
+            object: cheatingStatistic,
+        });
     }
 }
 
