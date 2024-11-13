@@ -90,6 +90,11 @@ class ExamRepo {
     static async submitExam(examId, answers) {
         return { exam: examId, answers };
     }
+
+    static async getTeacherId(examId) {
+        const exam = await examModel.findOne({ _id: examId }).select("teacher").lean();
+        return exam.teacher;
+    }
 }
 
 module.exports = ExamRepo;

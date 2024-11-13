@@ -76,11 +76,8 @@ const authentication = asyncHandler(async (req, res, next) => {
     const userId = req.headers[HEADER.CLIENT_ID];
     if (!userId) throw new UnauthorizedError("Unauthorized");
 
-    console.log("userId: ", userId);
-
     const user = await userRepo.findUserByUserId(userId);
     if (!user) throw new NotFoundError("Not found user");
-    console.log("userId: ", userId);
     const keyStore = await findByUserId(userId);
     if (!keyStore) throw new NotFoundError("Not found keyStore");
     //3

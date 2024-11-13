@@ -12,21 +12,19 @@ const { cheatingResolve } = require("../resolvers/cheating.resolve");
 
 class CheatingHistoryService {
     static async createCheatingHistory(cheatingData, examId, studentId) {
-        // Bước 1: Xác thực dữ liệu
         await this.validateData(examId, studentId);
 
-        // Bước 2: Tạo bản ghi lịch sử gian lận
         const newCheatingHistory = await this.createHistoryEntry(cheatingData, examId, studentId);
 
-        // Bước 3: Cập nhật hoặc tạo thống kê gian lận
+        const teacherId = await examRepo.getTeacherId(examId);
+
         const cheatingStatistic = await CheatingStatisticService.updateCheatingStatistic(
             cheatingData,
             examId,
             studentId,
         );
 
-        // Bước 4: Gửi thông báo qua RabbitMQ với dữ liệu Cheating Statistic
-        cheatingResolve(cheatingStatistic);
+        cheatingResolve(cheatingStatistic, teacherId);
 
         return getInfoData({
             fields: ["_id", "infractionType", "description", "student", "exam", "createdAt", "updatedAt"],
