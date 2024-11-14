@@ -19,18 +19,7 @@ class ExamService {
         }
 
         return getInfoData({
-            fields: [
-                "_id",
-                "title",
-                "description",
-                "startTime",
-                "endTime",
-                "status",
-                "teacher",
-                "question",
-                "createdAt",
-                "updatedAt",
-            ],
+            fields: ["_id", "title", "description", "startTime", "endTime", "duration", "status", "teacher", "question", "createdAt", "updatedAt"],
             object: exam,
         });
     };
@@ -48,17 +37,7 @@ class ExamService {
 
         const newExam = await examRepo.createExam(examData);
         return getInfoData({
-            fields: [
-                "_id",
-                "title",
-                "description",
-                "startTime",
-                "endTime",
-                "status",
-                "question",
-                "createdAt",
-                "updatedAt",
-            ],
+            fields: ["_id", "title", "description", "startTime", "endTime", "duration", "status", "question", "createdAt", "updatedAt"],
             object: newExam,
         });
     };
@@ -79,17 +58,7 @@ class ExamService {
         }
 
         return getInfoData({
-            fields: [
-                "_id",
-                "title",
-                "description",
-                "startTime",
-                "endTime",
-                "status",
-                "question",
-                "createdAt",
-                "updatedAt",
-            ],
+            fields: ["_id", "title", "description", "startTime", "endTime", "duration", "status", "question", "createdAt", "updatedAt"],
             object: updatedExam,
         });
     };
@@ -111,18 +80,7 @@ class ExamService {
             totalPages,
             exams: exams.map((exam) =>
                 getInfoData({
-                    fields: [
-                        "_id",
-                        "title",
-                        "description",
-                        "startTime",
-                        "endTime",
-                        "status",
-                        "questionCount",
-                        "teacher",
-                        "createdAt",
-                        "updatedAt",
-                    ],
+                    fields: ["_id", "title", "description", "startTime", "endTime", "duration", "status", "questionCount", "teacher", "createdAt", "updatedAt"],
                     object: exam,
                 }),
             ),
@@ -138,17 +96,7 @@ class ExamService {
             totalPages,
             exams: exams.map((exam) =>
                 getInfoData({
-                    fields: [
-                        "_id",
-                        "title",
-                        "description",
-                        "startTime",
-                        "endTime",
-                        "questionCount",
-                        "status",
-                        "createdAt",
-                        "updatedAt",
-                    ],
+                    fields: ["_id", "title", "description", "startTime", "endTime", "duration", "questionCount", "status", "createdAt", "updatedAt"],
                     object: exam,
                 }),
             ),
@@ -172,18 +120,7 @@ class ExamService {
             totalPages,
             exams: exams.map((exam) =>
                 getInfoData({
-                    fields: [
-                        "_id",
-                        "title",
-                        "description",
-                        "startTime",
-                        "endTime",
-                        "status",
-                        "questionCount",
-                        "teacher",
-                        "createdAt",
-                        "updatedAt",
-                    ],
+                    fields: ["_id", "title", "description", "startTime", "endTime", "duration", "status", "questionCount", "teacher", "createdAt", "updatedAt"],
                     object: exam,
                 }),
             ),
@@ -202,18 +139,7 @@ class ExamService {
             totalPages,
             exams: exams.map((exam) =>
                 getInfoData({
-                    fields: [
-                        "_id",
-                        "title",
-                        "description",
-                        "startTime",
-                        "endTime",
-                        "status",
-                        "questionCount",
-                        "teacher",
-                        "createdAt",
-                        "updatedAt",
-                    ],
+                    fields: ["_id", "title", "description", "startTime", "endTime", "duration", "status", "questionCount", "teacher", "createdAt", "updatedAt"],
                     object: exam,
                 }),
             ),
@@ -239,38 +165,66 @@ class ExamService {
     };
 
     static async submitExam(examId, studentId, answers) {
+        const exam = await this.validateExamAndStudent(examId, studentId);
+
+        answers = this.normalizeAnswers(answers);
+
+        await this.checkIfAlreadySubmitted(examId, studentId);
+
+        const questions = await this.fetchQuestions(examId);
+        const existingAnswersMap = await this.getExistingAnswersMap(studentId, questions);
+
+        const { newAnswers, updatedAnswers, score } = this.calculateAnswersAndScore(answers, questions, existingAnswersMap, studentId);
+
+        await this.saveAnswers(newAnswers, updatedAnswers);
+
+        const newGrade = await this.createGrade(studentId, examId, score);
+
+        return { message: "Exam submitted successfully", newGrade };
+    }
+
+    static async validateExamAndStudent(examId, studentId) {
         const exam = await examRepo.findExamById(examId);
         if (!exam) {
             throw new BadRequestError("Exam not found");
         }
-
         if (exam.teacher._id.toString() === studentId) {
             throw new UnauthorizedError("Teachers cannot submit exams");
         }
+        return exam;
+    }
 
-        if (!answers || answers.length === 0) answers = [];
+    static normalizeAnswers(answers) {
+        return answers && answers.length > 0 ? answers : [];
+    }
 
+    static async checkIfAlreadySubmitted(examId, studentId) {
         const existingGrade = await gradeRepo.findGradeByStudentAndExam(studentId, examId);
         if (existingGrade) {
             throw new BadRequestError("You have already submitted this exam.");
         }
+    }
 
+    static async fetchQuestions(examId) {
         const questions = await questionRepo.findQuestionsByExam(examId);
         if (!questions || questions.length === 0) {
             throw new BadRequestError("No questions found for this exam");
         }
+        return questions;
+    }
 
+    static async getExistingAnswersMap(studentId, questions) {
         const questionIds = questions.map((q) => q._id);
         const existingAnswers = await answerRepo.findAnswersByStudentAndQuestions(studentId, questionIds);
-
-        const existingAnswersMap = existingAnswers.reduce((map, ans) => {
+        return existingAnswers.reduce((map, ans) => {
             map[ans.question.toString()] = ans;
             return map;
         }, {});
+    }
 
+    static calculateAnswersAndScore(answers, questions, existingAnswersMap, studentId) {
         const newAnswers = [];
         const updatedAnswers = [];
-
         const score = questions.reduce((total, questionData) => {
             const submittedAnswer = answers.find((a) => a.question.toString() === questionData._id.toString());
             const existingAnswer = existingAnswersMap[questionData._id.toString()];
@@ -304,6 +258,10 @@ class ExamService {
             return isCorrect ? total + questionData.questionScore : total;
         }, 0);
 
+        return { newAnswers, updatedAnswers, score };
+    }
+
+    static async saveAnswers(newAnswers, updatedAnswers) {
         if (newAnswers.length > 0) {
             await answerRepo.insertManyAnswers(newAnswers);
         }
@@ -311,15 +269,15 @@ class ExamService {
         if (updatedAnswers.length > 0) {
             await Promise.all(updatedAnswers.map((answer) => answerRepo.updateAnswer(answer)));
         }
+    }
 
-        const newGrade = await gradeRepo.createGrade({
+    static async createGrade(studentId, examId, score) {
+        return await gradeRepo.createGrade({
             student: studentId,
             exam: examId,
             score,
             feedback: "Exam graded successfully",
         });
-
-        return { message: "Exam submitted successfully", newGrade };
     }
 }
 

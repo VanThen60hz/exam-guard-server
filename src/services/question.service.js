@@ -3,6 +3,9 @@ const { getInfoData } = require("../utils");
 const { BadRequestError, UnauthorizedError, ForbiddenError } = require("../core/error.response");
 const questionRepo = require("../repo/question.repo");
 const examRepo = require("../repo/exam.repo");
+const gradeRepo = require("../repo/grade.repo");
+const ExamService = require("./exam.service");
+const schedule = require("node-schedule");
 
 class QuestionService {
     static findQuestionById = async (questionId, userId) => {
@@ -118,11 +121,18 @@ class QuestionService {
         return { message: "Question deleted successfully" };
     };
 
-    static listQuestions = async (filter = {}, teacherId, page, limit) => {
+    static listQuestions = async (filter = {}, userId, isTeacher, page, limit) => {
         const { exam: examId } = filter;
         const examToCheck = await examRepo.findExamById(examId);
         if (!examToCheck) {
             throw new BadRequestError("Exam not found");
+        }
+
+        let teacherId = null;
+        if (isTeacher) {
+            teacherId = userId;
+        } else {
+            await this.scheduleExamSubmissionIfNeeded(examToCheck, userId);
         }
 
         if (teacherId != null && examToCheck.teacher._id.toString() !== teacherId) {
@@ -152,6 +162,17 @@ class QuestionService {
             ),
         };
     };
+
+    static async scheduleExamSubmissionIfNeeded(exam, studentId) {
+        const existingGrade = await gradeRepo.findGradeByStudentAndExam(studentId, exam._id);
+        if (!existingGrade) {
+            console.log("Scheduling exam submission for student", studentId);
+            const submissionTime = new Date(Date.now() + exam.duration * 60 * 1000);
+            schedule.scheduleJob(submissionTime, async () => {
+                await ExamService.submitExam(exam._id, studentId, []);
+            });
+        }
+    }
 
     static filterQuestions = async (query, page, limit, examId) => {
         const { totalQuestions, questions } = await questionRepo.filterQuestions(query, page, limit, examId);

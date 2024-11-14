@@ -10,6 +10,7 @@ const ExamSchema = new Schema(
         description: { type: String },
         startTime: { type: Date, required: true },
         endTime: { type: Date, required: true },
+        duration: { type: Number, required: true },
         status: {
             type: String,
             required: true,

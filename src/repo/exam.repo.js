@@ -11,6 +11,7 @@ class ExamRepo {
             description: 1,
             startTime: 1,
             endTime: 1,
+            duration: 1,
             status: 1,
             question: 1,
         };
