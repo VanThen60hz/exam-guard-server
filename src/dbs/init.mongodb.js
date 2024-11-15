@@ -1,12 +1,12 @@
 "use strict";
 
 const mongoose = require("mongoose");
-// const {
-//     db: { host, name, port },
-// } = require("../configs/mongodb");
+const {
+    db: { host, name, port },
+} = require("../configs/mongodb");
 
-// const connectString = `mongodb://${host}:${port}/${name}`;
-const connectString = `mongodb+srv://nguyenvthang2409:E00z60hz@mongo-cluster.i9hqpgd.mongodb.net/examguardPROD?retryWrites=true&w=majority&appName=mongo-cluster`;
+const connectString = `mongodb://${host}:${port}/${name}`;
+// const connectString = `mongodb+srv://nguyenvthang2409:E00z60hz@mongo-cluster.i9hqpgd.mongodb.net/examguardPROD?retryWrites=true&w=majority&appName=mongo-cluster`;
 
 const { countConnect } = require("../helpers/check.connect");
 

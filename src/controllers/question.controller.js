@@ -54,10 +54,8 @@ class QuestionController {
     listQuestions = async (req, res, next) => {
         const { examId } = req.params;
         const { page = 1, limit = 10 } = req.query;
-        let isTeacher = false;
-        const userId = req.userId;
-        if (req.role === "TEACHER") isTeacher = true;
-        const responseData = await questionService.listQuestions({ exam: examId }, userId, isTeacher, page, limit);
+        const teacherId = req.userId;
+        const responseData = await questionService.listQuestions({ exam: examId }, teacherId, page, limit);
 
         new SuccessResponse({
             message: "List of questions retrieved successfully",
@@ -70,7 +68,7 @@ class QuestionController {
     };
 
     searchQuestions = async (req, res, next) => {
-        const { examId } = req.params; // Lấy examId từ URL
+        const { examId } = req.params;
         const { query } = req.query;
         const { page = 1, limit = 10 } = req.query;
 

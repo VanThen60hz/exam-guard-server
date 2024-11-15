@@ -70,6 +70,22 @@ class QuestionRepo {
 
         return { totalQuestions, questions };
     }
+
+    static async getTotalScoreByExamId(examId) {
+        const result = await questionModel.aggregate([
+            {
+                $match: { exam: examId },
+            },
+            {
+                $group: {
+                    _id: "$exam",
+                    totalScore: { $sum: "$questionScore" },
+                },
+            },
+        ]);
+
+        return result.length > 0 ? result[0].totalScore : 0;
+    }
 }
 
 module.exports = QuestionRepo;
