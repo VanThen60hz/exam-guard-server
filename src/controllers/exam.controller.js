@@ -97,13 +97,17 @@ class ExamController {
         }).send(res);
     };
 
-    completeExam = async (req, res, next) => {
+    joinExam = async (req, res, next) => {
         const { id } = req.params;
-        const userId = req.userId;
-        const response = await examService.completeExam(id, userId);
+        const studentId = req.userId;
+        const response = await examService.joinExam(id, studentId);
 
         new SuccessResponse({
             message: response.message,
+            metadata: {
+                remainingTime: response.remainingTime,
+                questions: response.questions,
+            },
         }).send(res);
     };
 

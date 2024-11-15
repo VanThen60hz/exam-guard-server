@@ -5,6 +5,7 @@ const examRepo = require("../repo/exam.repo");
 const gradeRepo = require("../repo/grade.repo");
 const questionRepo = require("../repo/question.repo");
 const answerRepo = require("../repo/answer.repo");
+const schedule = require("node-schedule");
 
 class ExamService {
     static findExamById = async (examId, userId) => {
@@ -19,7 +20,19 @@ class ExamService {
         }
 
         return getInfoData({
-            fields: ["_id", "title", "description", "startTime", "endTime", "duration", "status", "teacher", "question", "createdAt", "updatedAt"],
+            fields: [
+                "_id",
+                "title",
+                "description",
+                "startTime",
+                "endTime",
+                "duration",
+                "status",
+                "teacher",
+                "question",
+                "createdAt",
+                "updatedAt",
+            ],
             object: exam,
         });
     };
@@ -37,7 +50,18 @@ class ExamService {
 
         const newExam = await examRepo.createExam(examData);
         return getInfoData({
-            fields: ["_id", "title", "description", "startTime", "endTime", "duration", "status", "question", "createdAt", "updatedAt"],
+            fields: [
+                "_id",
+                "title",
+                "description",
+                "startTime",
+                "endTime",
+                "duration",
+                "status",
+                "question",
+                "createdAt",
+                "updatedAt",
+            ],
             object: newExam,
         });
     };
@@ -58,7 +82,18 @@ class ExamService {
         }
 
         return getInfoData({
-            fields: ["_id", "title", "description", "startTime", "endTime", "duration", "status", "question", "createdAt", "updatedAt"],
+            fields: [
+                "_id",
+                "title",
+                "description",
+                "startTime",
+                "endTime",
+                "duration",
+                "status",
+                "question",
+                "createdAt",
+                "updatedAt",
+            ],
             object: updatedExam,
         });
     };
@@ -80,7 +115,19 @@ class ExamService {
             totalPages,
             exams: exams.map((exam) =>
                 getInfoData({
-                    fields: ["_id", "title", "description", "startTime", "endTime", "duration", "status", "questionCount", "teacher", "createdAt", "updatedAt"],
+                    fields: [
+                        "_id",
+                        "title",
+                        "description",
+                        "startTime",
+                        "endTime",
+                        "duration",
+                        "status",
+                        "questionCount",
+                        "teacher",
+                        "createdAt",
+                        "updatedAt",
+                    ],
                     object: exam,
                 }),
             ),
@@ -96,7 +143,18 @@ class ExamService {
             totalPages,
             exams: exams.map((exam) =>
                 getInfoData({
-                    fields: ["_id", "title", "description", "startTime", "endTime", "duration", "questionCount", "status", "createdAt", "updatedAt"],
+                    fields: [
+                        "_id",
+                        "title",
+                        "description",
+                        "startTime",
+                        "endTime",
+                        "duration",
+                        "questionCount",
+                        "status",
+                        "createdAt",
+                        "updatedAt",
+                    ],
                     object: exam,
                 }),
             ),
@@ -120,7 +178,19 @@ class ExamService {
             totalPages,
             exams: exams.map((exam) =>
                 getInfoData({
-                    fields: ["_id", "title", "description", "startTime", "endTime", "duration", "status", "questionCount", "teacher", "createdAt", "updatedAt"],
+                    fields: [
+                        "_id",
+                        "title",
+                        "description",
+                        "startTime",
+                        "endTime",
+                        "duration",
+                        "status",
+                        "questionCount",
+                        "teacher",
+                        "createdAt",
+                        "updatedAt",
+                    ],
                     object: exam,
                 }),
             ),
@@ -139,33 +209,50 @@ class ExamService {
             totalPages,
             exams: exams.map((exam) =>
                 getInfoData({
-                    fields: ["_id", "title", "description", "startTime", "endTime", "duration", "status", "questionCount", "teacher", "createdAt", "updatedAt"],
+                    fields: [
+                        "_id",
+                        "title",
+                        "description",
+                        "startTime",
+                        "endTime",
+                        "duration",
+                        "status",
+                        "questionCount",
+                        "teacher",
+                        "createdAt",
+                        "updatedAt",
+                    ],
                     object: exam,
                 }),
             ),
         };
     }
 
-    static completeExam = async (examId, userId) => {
-        const exam = await examRepo.findExamById(examId);
-        if (!exam) {
-            throw new BadRequestError("Exam not found");
-        }
+    static async joinExam(examId, studentId) {
+        const exam = await this.validateExamAndStudent(examId, studentId);
 
-        if (exam.teacher._id.toString() !== userId) {
-            throw new UnauthorizedError("You are not authorized to complete this exam");
-        }
+        const submissionTime = await this.scheduleExamSubmissionIfNeeded(exam, studentId);
+        const remainingTimeMs = submissionTime ? submissionTime - Date.now() : 0;
 
-        const completedExam = await examRepo.completeExam(examId);
-        if (!completedExam) {
-            throw new BadRequestError("Failed to complete exam");
-        }
+        const minutes = Math.floor(remainingTimeMs / 60000); // 1 minute = 60000 ms
+        const seconds = Math.floor((remainingTimeMs % 60000) / 1000); // Get remaining seconds
 
-        return { message: "Exam completed successfully" };
-    };
+        const questions = await this.fetchQuestions(examId);
+
+        return {
+            message: "Exam joined successfully",
+            remainingTime: { minutes, seconds },
+            questions: questions.map((question) =>
+                getInfoData({
+                    fields: ["_id", "questionText", "questionType", "questionScore", "options"],
+                    object: question,
+                }),
+            ),
+        };
+    }
 
     static async submitExam(examId, studentId, answers) {
-        const exam = await this.validateExamAndStudent(examId, studentId);
+        await this.validateExamAndStudent(examId, studentId);
 
         answers = this.normalizeAnswers(answers);
 
@@ -174,13 +261,46 @@ class ExamService {
         const questions = await this.fetchQuestions(examId);
         const existingAnswersMap = await this.getExistingAnswersMap(studentId, questions);
 
-        const { newAnswers, updatedAnswers, score } = this.calculateAnswersAndScore(answers, questions, existingAnswersMap, studentId);
+        const { newAnswers, updatedAnswers, score } = this.calculateAnswersAndScore(
+            answers,
+            questions,
+            existingAnswersMap,
+            studentId,
+        );
 
         await this.saveAnswers(newAnswers, updatedAnswers);
 
         const newGrade = await this.createGrade(studentId, examId, score);
 
         return { message: "Exam submitted successfully", newGrade };
+    }
+
+    static async scheduleExamSubmissionIfNeeded(exam, studentId) {
+        const jobName = `submission_${exam._id}_${studentId}`;
+        const existingJob = schedule.scheduledJobs[jobName];
+
+        if (existingJob) {
+            const submissionTime = existingJob.nextInvocation().toDate();
+            return submissionTime;
+        }
+
+        const submissionTime = new Date(Date.now() + exam.duration * 60 * 1000);
+
+        schedule.scheduleJob(jobName, submissionTime, async () => {
+            try {
+                await this.submitExam(exam._id, studentId, []);
+            } catch (error) {
+                console.error("Error during auto-submission:", error);
+            } finally {
+                const job = schedule.scheduledJobs[jobName];
+                if (job) {
+                    job.cancel();
+                    delete schedule.scheduledJobs[jobName];
+                }
+            }
+        });
+
+        return submissionTime;
     }
 
     static async validateExamAndStudent(examId, studentId) {
