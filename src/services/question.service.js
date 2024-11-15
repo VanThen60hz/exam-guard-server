@@ -39,7 +39,7 @@ class QuestionService {
             throw new ForbiddenError("You are not authorized to add a question to this exam");
         }
 
-        const totalScore = await questionRepo.getTotalScoreByExamId(examId);
+        const totalScore = await questionRepo.getTotalScoreByExamId(examToCheck._id);
 
         if (totalScore + (questionBody.questionScore || 0) > 10) {
             throw new BadRequestError("Total score of questions in this exam cannot exceed 10");
