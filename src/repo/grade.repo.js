@@ -106,6 +106,10 @@ class GradeRepo {
     static async findGradeByStudentAndExam(studentId, examId) {
         return await gradeModel.findOne({ student: studentId, exam: examId }).lean();
     }
+
+    static deleteByStudent = async (studentId, session) => {
+        return gradeModel.deleteMany({ student: studentId }).session(session);
+    };
 }
 
 module.exports = GradeRepo;
