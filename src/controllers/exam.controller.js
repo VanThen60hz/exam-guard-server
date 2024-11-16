@@ -99,13 +99,16 @@ class ExamController {
 
     joinExam = async (req, res, next) => {
         const { id } = req.params;
+        const { page = 1, limit = 10 } = req.query;
         const studentId = req.userId;
-        const response = await examService.joinExam(id, studentId);
+        const response = await examService.joinExam(id, studentId, page, limit);
 
         new SuccessResponse({
             message: response.message,
             metadata: {
                 remainingTime: response.remainingTime,
+                total: response.total,
+                totalPages: response.totalPages,
                 questions: response.questions,
             },
         }).send(res);

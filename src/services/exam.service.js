@@ -228,7 +228,7 @@ class ExamService {
         };
     }
 
-    static async joinExam(examId, studentId) {
+    static async joinExam(examId, studentId, page = 1, limit = 10) {
         const exam = await this.validateExamAndStudent(examId, studentId);
 
         const submissionTime = await this.scheduleExamSubmissionIfNeeded(exam, studentId);
@@ -237,11 +237,15 @@ class ExamService {
         const minutes = Math.floor(remainingTimeMs / 60000); // 1 minute = 60000 ms
         const seconds = Math.floor((remainingTimeMs % 60000) / 1000); // Get remaining seconds
 
-        const questions = await this.fetchQuestions(examId);
+        const totalQuestions = await questionRepo.countQuestions({ exam: examId });
+        const totalPages = Math.ceil(totalQuestions / limit);
+        const questions = await questionRepo.listQuestions({ exam: examId }, page, limit);
 
         return {
             message: "Exam joined successfully",
             remainingTime: { minutes, seconds },
+            total: totalQuestions,
+            totalPages,
             questions: questions.map((question) =>
                 getInfoData({
                     fields: ["_id", "questionText", "questionType", "questionScore", "options"],
