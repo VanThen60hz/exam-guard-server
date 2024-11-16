@@ -1,7 +1,12 @@
 "use strict";
+
+const mongoose = require("mongoose");
 const { getInfoData } = require("../utils");
 const { BadRequestError } = require("../core/error.response");
-const userRepo = require("../repo/user.repo"); // Đổi tên searchUsers thành repoSearchUsers
+const userRepo = require("../repo/user.repo");
+const cheatingHistoryRepo = require("../repo/cheatingHistory.repo");
+const cheatingStatisticRepo = require("../repo/cheatingStatistic.repo");
+const gradeRepo = require("../repo/grade.repo");
 
 class UserService {
     static findUserById = async (userId) => {
@@ -57,11 +62,24 @@ class UserService {
     };
 
     static deleteUser = async (userId) => {
-        const deletedUser = await userRepo.deleteUser(userId);
-        if (!deletedUser) {
-            throw new BadRequestError("User not found");
+        try {
+            const deletedUser = await userRepo.deleteUser(userId);
+            if (!deletedUser) {
+                throw new BadRequestError("User not found");
+            }
+
+            const promises = [
+                cheatingStatisticRepo.deleteByStudent(userId),
+                cheatingHistoryRepo.deleteByStudent(userId),
+                gradeRepo.deleteByStudent(userId),
+            ];
+
+            await Promise.all(promises);
+
+            return { message: "User and related records deleted successfully" };
+        } catch (error) {
+            throw error;
         }
-        return { message: "User deleted successfully" };
     };
 
     static listUsers = async (filter = {}, page, limit) => {

@@ -71,6 +71,10 @@ class CheatingStatisticRepo {
 
         return { totalCheatingStatistics, cheatingStatistics };
     }
+
+    static deleteByStudent = async (studentId, session) => {
+        return cheatingStatisticModel.deleteMany({ student: studentId }).session(session);
+    };
 }
 
 module.exports = CheatingStatisticRepo;

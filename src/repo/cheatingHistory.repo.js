@@ -71,6 +71,10 @@ class CheatingHistoryRepo {
 
         return { totalCheatingHistories, cheatingHistories };
     }
+
+    static deleteByStudent = async (studentId, session) => {
+        return cheatingHistoryModel.deleteMany({ student: studentId }).session(session);
+    };
 }
 
 module.exports = CheatingHistoryRepo;
