@@ -116,18 +116,27 @@ class CheatingHistoryService {
         };
     }
 
-    static async listCheatingHistoriesByStudentId(studentId, page = 1, limit = 10, examId = null) {
+    static async listCheatingHistoriesByStudentId(
+        studentId,
+        page = 1,
+        limit = 10,
+        examId = null,
+        infractionType = null,
+    ) {
         const examToCheck = await examRepo.findExamById(examId);
         if (!examToCheck) {
             throw new BadRequestError("Exam not found");
         }
 
         const filter = { student: studentId, exam: examId };
+        if (infractionType) {
+            filter.infractionType = infractionType;
+        }
 
         const cheatingHistories = await cheatingHistoryRepo.listCheatingHistories(filter, page, limit);
         return cheatingHistories.map((cheatingHistory) =>
             getInfoData({
-                fields: ["_id", "infractionType", "description", "student", "examId", "createdAt", "updatedAt"],
+                fields: ["_id", "infractionType", "description", "student", "exam", "createdAt", "updatedAt"],
                 object: cheatingHistory,
             }),
         );

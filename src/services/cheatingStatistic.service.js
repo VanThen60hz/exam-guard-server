@@ -69,23 +69,30 @@ class CheatingStatisticService {
         }
 
         const filter = { exam: examId };
+        const totalStatistics = await cheatingStatisticRepo.countCheatingStatistics(filter); // Tính tổng số bản ghi
         const cheatingStatistics = await cheatingStatisticRepo.listCheatingStatistics(filter, page, limit);
+        const totalPages = Math.ceil(totalStatistics / limit);
 
-        return cheatingStatistics.map((statistic) =>
-            getInfoData({
-                fields: [
-                    "_id",
-                    "faceDetectionCount",
-                    "tabSwitchCount",
-                    "screenCaptureCount",
-                    "student",
-                    "exam",
-                    "createdAt",
-                    "updatedAt",
-                ],
-                object: statistic,
-            }),
-        );
+        return {
+            total: totalStatistics,
+            totalPages,
+            cheatingStatistics: cheatingStatistics.map((statistic) =>
+                getInfoData({
+                    fields: [
+                        "_id",
+                        "faceDetectionCount",
+                        "tabSwitchCount",
+                        "screenCaptureCount",
+                        "totalViolations",
+                        "student",
+                        "exam",
+                        "createdAt",
+                        "updatedAt",
+                    ],
+                    object: statistic,
+                }),
+            ),
+        };
     }
 
     static async filterCheatingStatistics(query, page = 1, limit = 10, examId, teacherId) {

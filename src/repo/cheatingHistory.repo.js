@@ -46,6 +46,7 @@ class CheatingHistoryRepo {
             .find(filter)
             .skip(skip)
             .limit(limit)
+            .sort({ createdAt: -1 })
             .populate("student", "_id username email name avatar")
             .lean();
     }

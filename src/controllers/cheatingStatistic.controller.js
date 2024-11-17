@@ -46,19 +46,23 @@ class CheatingStatisticController {
             new BadRequestError("Exam ID is required").send(res);
         }
 
-        const { page = 1, limit = 10 } = req.query;
-        const cheatingStatistics = await cheatingStatisticService.listCheatingStatistics(
-            page,
-            limit,
-            examId,
-            teacherId,
-        );
+        let { page = 1, limit = 10 } = req.query;
+
+        page = parseInt(page, 10);
+        limit = parseInt(limit, 10);
+
+        if (isNaN(page) || isNaN(limit)) {
+            return new BadRequestError("Page and limit must be valid numbers").send(res);
+        }
+
+        const responseData = await cheatingStatisticService.listCheatingStatistics(page, limit, examId, teacherId);
 
         new SuccessResponse({
             message: "List of cheating statistics retrieved successfully",
             metadata: {
-                total: cheatingStatistics.length,
-                cheatingStatistics,
+                total: responseData.total,
+                totalPages: responseData.totalPages,
+                statistics: responseData.cheatingStatistics,
             },
         }).send(res);
     };
