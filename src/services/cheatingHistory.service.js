@@ -133,13 +133,20 @@ class CheatingHistoryService {
             filter.infractionType = infractionType;
         }
 
+        const totalCheatingHistories = await cheatingHistoryRepo.countCheatingHistories(filter);
         const cheatingHistories = await cheatingHistoryRepo.listCheatingHistories(filter, page, limit);
-        return cheatingHistories.map((cheatingHistory) =>
-            getInfoData({
-                fields: ["_id", "infractionType", "description", "student", "exam", "createdAt", "updatedAt"],
-                object: cheatingHistory,
-            }),
-        );
+        const totalPages = Math.ceil(totalCheatingHistories / limit);
+
+        return {
+            total: totalCheatingHistories,
+            totalPages,
+            cheatingHistories: cheatingHistories.map((cheatingHistory) =>
+                getInfoData({
+                    fields: ["_id", "infractionType", "description", "student", "exam", "createdAt", "updatedAt"],
+                    object: cheatingHistory,
+                }),
+            ),
+        };
     }
 }
 

@@ -85,27 +85,31 @@ class CheatingHistoryController {
             return new BadRequestError("Exam ID is required").send(res);
         }
 
-        const { page = 1, limit = 10, infractionType } = req.query;
+        let { page = 1, limit = 10, infractionType } = req.query;
 
-        try {
-            const cheatingHistories = await cheatingHistoryService.listCheatingHistoriesByStudentId(
-                studentId,
-                page,
-                limit,
-                examId,
-                infractionType,
-            );
+        page = parseInt(page, 10);
+        limit = parseInt(limit, 10);
 
-            new SuccessResponse({
-                message: "List of cheating histories for student retrieved successfully",
-                metadata: {
-                    total: cheatingHistories.length,
-                    cheatingHistories,
-                },
-            }).send(res);
-        } catch (error) {
-            next(error);
+        if (isNaN(page) || isNaN(limit)) {
+            return new BadRequestError("Page and limit must be valid numbers").send(res);
         }
+
+        const responseData = await cheatingHistoryService.listCheatingHistoriesByStudentId(
+            studentId,
+            page,
+            limit,
+            examId,
+            infractionType,
+        );
+
+        new SuccessResponse({
+            message: "List of cheating histories for student retrieved successfully",
+            metadata: {
+                total: responseData.total,
+                totalPages: responseData.totalPages,
+                cheatingHistories: responseData.cheatingHistories,
+            },
+        }).send(res);
     };
 }
 
