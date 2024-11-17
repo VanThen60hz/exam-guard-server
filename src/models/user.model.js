@@ -1,6 +1,7 @@
 "use strict";
 
-const { model, Schema } = require("mongoose"); // Erase if already required
+const { model, Schema } = require("mongoose");
+const { addTimestampsMiddleware } = require("../utils/dateHelper");
 const DOCUMENT_NAME = "User";
 const COLLECTION_NAME = "users";
 
