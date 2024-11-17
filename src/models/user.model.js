@@ -25,6 +25,8 @@ const userSchema = new Schema(
     },
 );
 
+addTimestampsMiddleware(userSchema);
+
 userSchema.index({
     username: "text",
     email: "text",
