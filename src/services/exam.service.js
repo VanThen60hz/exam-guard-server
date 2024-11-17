@@ -19,22 +19,27 @@ class ExamService {
             throw new UnauthorizedError("You are not authorized to access this exam");
         }
 
-        return getInfoData({
-            fields: [
-                "_id",
-                "title",
-                "description",
-                "startTime",
-                "endTime",
-                "duration",
-                "status",
-                "teacher",
-                "question",
-                "createdAt",
-                "updatedAt",
-            ],
-            object: exam,
-        });
+        const studentCount = this.calculateStudentCount(examId);
+
+        return {
+            ...getInfoData({
+                fields: [
+                    "_id",
+                    "title",
+                    "description",
+                    "startTime",
+                    "endTime",
+                    "duration",
+                    "status",
+                    "teacher",
+                    "question",
+                    "createdAt",
+                    "updatedAt",
+                ],
+                object: exam,
+            }),
+            studentCount,
+        };
     };
 
     static createExam = async (req) => {
@@ -134,32 +139,37 @@ class ExamService {
         };
     };
 
-    static listExamsForTeacher = async (filter = {}, page, limit) => {
+    static async listExamsForTeacher(filter = {}, page, limit) {
         const totalExams = await examRepo.countExams(filter);
         const exams = await examRepo.listExams(filter, page, limit);
         const totalPages = Math.ceil(totalExams / limit);
+
         return {
             total: totalExams,
             totalPages,
-            exams: exams.map((exam) =>
-                getInfoData({
-                    fields: [
-                        "_id",
-                        "title",
-                        "description",
-                        "startTime",
-                        "endTime",
-                        "duration",
-                        "questionCount",
-                        "status",
-                        "createdAt",
-                        "updatedAt",
-                    ],
-                    object: exam,
-                }),
-            ),
+            exams: exams.map((exam) => {
+                const studentCount = this.calculateStudentCount(exam._id);
+                return {
+                    ...getInfoData({
+                        fields: [
+                            "_id",
+                            "title",
+                            "description",
+                            "startTime",
+                            "endTime",
+                            "duration",
+                            "questionCount",
+                            "status",
+                            "createdAt",
+                            "updatedAt",
+                        ],
+                        object: exam,
+                    }),
+                    studentCount,
+                };
+            }),
         };
-    };
+    }
 
     static async filterExamsForTeacher(filter, page = 1, limit = 10) {
         const { query, teacher: teacherId, status } = filter;
@@ -170,30 +180,33 @@ class ExamService {
         }
 
         const { totalExams, exams } = await examRepo.filterExams(query, page, limit, additionalFilter);
-
         const totalPages = Math.ceil(totalExams / limit);
 
         return {
             total: totalExams,
             totalPages,
-            exams: exams.map((exam) =>
-                getInfoData({
-                    fields: [
-                        "_id",
-                        "title",
-                        "description",
-                        "startTime",
-                        "endTime",
-                        "duration",
-                        "status",
-                        "questionCount",
-                        "teacher",
-                        "createdAt",
-                        "updatedAt",
-                    ],
-                    object: exam,
-                }),
-            ),
+            exams: exams.map((exam) => {
+                const studentCount = this.calculateStudentCount(exam._id);
+                return {
+                    ...getInfoData({
+                        fields: [
+                            "_id",
+                            "title",
+                            "description",
+                            "startTime",
+                            "endTime",
+                            "duration",
+                            "status",
+                            "questionCount",
+                            "teacher",
+                            "createdAt",
+                            "updatedAt",
+                        ],
+                        object: exam,
+                    }),
+                    studentCount,
+                };
+            }),
         };
     }
 
@@ -234,8 +247,8 @@ class ExamService {
         const submissionTime = await this.scheduleExamSubmissionIfNeeded(exam, studentId);
         const remainingTimeMs = submissionTime ? submissionTime - Date.now() : 0;
 
-        const minutes = Math.floor(remainingTimeMs / 60000); // 1 minute = 60000 ms
-        const seconds = Math.floor((remainingTimeMs % 60000) / 1000); // Get remaining seconds
+        const minutes = Math.floor(remainingTimeMs / 60000);
+        const seconds = Math.floor((remainingTimeMs % 60000) / 1000);
 
         const totalQuestions = await questionRepo.countQuestions({ exam: examId });
         const totalPages = Math.ceil(totalQuestions / limit);
@@ -402,6 +415,13 @@ class ExamService {
             score,
             feedback: "Exam graded successfully",
         });
+    }
+
+    static calculateStudentCount(examId) {
+        return Object.keys(schedule.scheduledJobs).filter((jobName) => {
+            const regex = new RegExp(`^submission_${examId}_(.+)$`);
+            return regex.test(jobName);
+        }).length;
     }
 }
 
