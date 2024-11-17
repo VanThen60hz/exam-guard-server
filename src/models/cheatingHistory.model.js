@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+const { addTimestampsMiddleware } = require("../utils/dateHelper");
 
-const { model, Schema } = mongoose;
+const { Schema, model } = require("mongoose");
 const DOCUMENT_NAME = "CheatingHistory";
 const COLLECTION_NAME = "cheating_histories";
 
@@ -29,8 +29,10 @@ const CheatingHistorySchema = new Schema(
     },
 );
 
+addTimestampsMiddleware(CheatingHistorySchema);
+
 CheatingHistorySchema.index({ student: 1, exam: 1, infractionType: 1 });
 
-const CheatingHistory = mongoose.model(DOCUMENT_NAME, CheatingHistorySchema);
+const CheatingHistory = model(DOCUMENT_NAME, CheatingHistorySchema);
 
 module.exports = CheatingHistory;

@@ -1,12 +1,12 @@
 "use strict";
 
-const { Schema, model } = require("mongoose"); // Erase if already required
+const { Schema, model } = require("mongoose");
+const { addTimestampsMiddleware } = require("../utils/dateHelper");
 
 const DOCUMENT_NAME = "Key";
 const COLLECTION_NAME = "keys";
 
-// Declare the Schema of the Mongo model
-var keyTokenSchema = new Schema(
+const keyTokenSchema = new Schema(
     {
         user: {
             type: Schema.Types.ObjectId,
@@ -36,7 +36,8 @@ var keyTokenSchema = new Schema(
     },
 );
 
+addTimestampsMiddleware(keyTokenSchema);
+
 keyTokenSchema.index({ user: 1, privateKey: 1, publicKey: 1 });
 
-//Export the model
 module.exports = model(DOCUMENT_NAME, keyTokenSchema);

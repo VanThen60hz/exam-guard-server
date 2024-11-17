@@ -1,12 +1,12 @@
 "use strict";
 
-const { model, Schema } = require("mongoose"); // Erase if already required
+const { addTimestampsMiddleware } = require("../utils/dateHelper");
 
+const { model, Schema } = require("mongoose");
 const DOCUMENT_NAME = "ApiKey";
 const COLLECTION_NAME = "apiKeys";
 
-// Declare the Schema of the Mongo model
-var apiKeySchema = new Schema(
+const apiKeySchema = new Schema(
     {
         key: {
             type: String,
@@ -29,7 +29,8 @@ var apiKeySchema = new Schema(
     },
 );
 
+addTimestampsMiddleware(apiKeySchema);
+
 apiKeySchema.index({ key: 1 });
 
-//Export the model
 module.exports = model(DOCUMENT_NAME, apiKeySchema);

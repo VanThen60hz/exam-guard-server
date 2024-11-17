@@ -1,5 +1,8 @@
-const mongoose = require("mongoose");
-const { Schema } = mongoose;
+"use strict";
+
+const { addTimestampsMiddleware } = require("../utils/dateHelper");
+
+const { Schema, model } = require("mongoose");
 
 const DOCUMENT_NAME = "Question";
 const COLLECTION_NAME = "questions";
@@ -35,8 +38,10 @@ const QuestionSchema = new Schema(
     },
 );
 
+addTimestampsMiddleware(QuestionSchema);
+
 QuestionSchema.index({ exam: 1, questionType: 1, questionText: "text" });
 
-const Question = mongoose.model(DOCUMENT_NAME, QuestionSchema);
+const Question = model(DOCUMENT_NAME, QuestionSchema);
 
 module.exports = Question;

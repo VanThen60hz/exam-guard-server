@@ -1,6 +1,5 @@
-const mongoose = require("mongoose");
-
-const { model, Schema, Types } = mongoose;
+const { addTimestampsMiddleware } = require("../utils/dateHelper");
+const { Schema, model } = require("mongoose");
 const DOCUMENT_NAME = "Answer";
 const COLLECTION_NAME = "answers";
 
@@ -31,8 +30,10 @@ const AnswerSchema = new Schema(
     },
 );
 
+addTimestampsMiddleware(AnswerSchema);
+
 AnswerSchema.index({ question: 1, student: 1 });
 
-const Answer = mongoose.model(DOCUMENT_NAME, AnswerSchema);
+const Answer = model(DOCUMENT_NAME, AnswerSchema);
 
 module.exports = Answer;
