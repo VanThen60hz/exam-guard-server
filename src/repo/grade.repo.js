@@ -1,4 +1,6 @@
 "use strict";
+
+const { Types } = require("mongoose");
 const gradeModel = require("../models/grade.model");
 const questionModel = require("../models/question.model");
 const answerModel = require("../models/answer.model");
@@ -41,30 +43,43 @@ class GradeRepo {
 
     static async listGrades(filter = {}, page = 1, limit = 10) {
         const skip = (page - 1) * limit;
-        return await gradeModel.find(filter).skip(skip).limit(limit).populate("exam").populate("student").lean();
-    }
-
-    static async filterGrades(query, page = 1, limit = 10) {
-        const skip = (page - 1) * limit;
-
-        const searchQuery = {
-            $or: [
-                { score: { $regex: query, $options: "i" } },
-                { exam: { $regex: query, $options: "i" } },
-                { student: { $regex: query, $options: "i" } },
-            ],
-        };
-
-        const totalGrades = await gradeModel.countDocuments(searchQuery);
-        const grades = await gradeModel
-            .find(searchQuery)
+        return await gradeModel
+            .find(filter)
             .skip(skip)
             .limit(limit)
-            .populate("exam")
-            .populate("student")
+            .populate("exam", "_id teacher title description")
+            .populate("student", "_id username email name avatar")
             .lean();
+    }
 
-        return { totalGrades, grades };
+    static async searchGradesByExam(filter = {}, page = 1, limit = 10) {
+        const skip = (page - 1) * limit;
+        return await gradeModel
+            .find(filter)
+            .skip(skip)
+            .limit(limit)
+            .populate("exam", "_id teacher title description")
+            .populate("student", "_id username email name avatar")
+            .lean();
+    }
+
+    static async searchGradesByExamWithReferences(examId, query = "", page = 1, limit = 10) {
+        const skip = (page - 1) * limit;
+
+        const pipeline = [
+            { $match: { exam: new Types.ObjectId(`${examId}`) } },
+
+            {
+                $match: {},
+            },
+        ];
+
+        const [grades, totalGrades] = await Promise.all([
+            gradeModel.aggregate(pipeline).exec(),
+            gradeModel.countDocuments({ exam: examId }).exec(),
+        ]);
+
+        return { grades, totalGrades };
     }
 
     static async calculateGradeForStudent(examId, studentId) {

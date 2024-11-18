@@ -89,22 +89,10 @@ class GradeService {
         };
     }
 
-    static async verifyExamOwnership(examId, teacherId) {
-        const exam = await examRepo.findExamById(examId);
-        if (!exam) {
-            throw new BadRequestError("Exam not found");
-        }
-        if (exam.teacher.toString() !== teacherId) {
-            throw new UnauthorizedError("You are not authorized to view grades for this exam");
-        }
-        return exam;
-    }
-
     static async searchGradesByExamId(examId, query, teacherId, page = 1, limit = 10) {
         await this.verifyExamOwnership(examId, teacherId);
 
-        const filter = { exam: examId, $text: { $search: query } };
-        const { totalGrades, grades } = await gradeRepo.filterGrades(filter, page, limit);
+        const { totalGrades, grades } = await gradeRepo.searchGradesByExamWithReferences(examId, query, page, limit);
         const totalPages = Math.ceil(totalGrades / limit);
 
         return {
@@ -117,6 +105,19 @@ class GradeService {
                 }),
             ),
         };
+    }
+
+    static async verifyExamOwnership(examId, teacherId) {
+        const exam = await examRepo.findExamById(examId);
+
+        if (!exam) {
+            throw new BadRequestError("Exam not found");
+        }
+
+        if (exam.teacher._id.toString() !== teacherId) {
+            throw new UnauthorizedError("You are not authorized to view grades for this exam");
+        }
+        return exam;
     }
 
     static filterGrades = async (query, page, limit) => {
@@ -144,7 +145,7 @@ class GradeService {
         }
 
         return getInfoData({
-            fields: ["_id", "score", "exam", "student", "createdAt", "updatedAt"],
+            fields: ["score", "createdAt", "updatedAt"],
             object: grade,
         });
     }

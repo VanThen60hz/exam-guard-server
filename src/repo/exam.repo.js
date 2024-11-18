@@ -77,7 +77,6 @@ class ExamRepo {
             .populate("teacher", "_id username email name")
             .lean();
 
-        // For each exam, get the question count using questionRepo
         const examsWithQuestionCount = await Promise.all(
             exams.map(async (exam) => {
                 const questionCount = await questionRepo.countQuestions({ exam: exam._id });

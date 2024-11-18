@@ -1,6 +1,7 @@
 "use strict";
 
 const { SuccessResponse } = require("../core/success.response");
+const { UnauthorizedError } = require("../core/error.response");
 const gradeService = require("../services/grade.service");
 
 class GradeController {
@@ -51,10 +52,6 @@ class GradeController {
             throw new BadRequestError("Exam ID is required");
         }
 
-        if (req.role !== "TEACHER") {
-            throw new UnauthorizedError("Only teachers can access grades by exam ID");
-        }
-
         const teacherId = req.userId;
         const responseData = await gradeService.listGradesByExamId(examId, teacherId, page, limit);
 
@@ -76,10 +73,6 @@ class GradeController {
             throw new BadRequestError("Exam ID is required");
         }
 
-        if (req.role !== "TEACHER") {
-            throw new UnauthorizedError("Only teachers can access grades by exam ID");
-        }
-
         const teacherId = req.userId;
         const responseData = await gradeService.searchGradesByExamId(examId, query, teacherId, page, limit);
 
@@ -98,10 +91,6 @@ class GradeController {
 
         if (!examId) {
             throw new BadRequestError("Exam ID is required");
-        }
-
-        if (req.role !== "STUDENT") {
-            throw new UnauthorizedError("Only students can view their grades");
         }
 
         const studentId = req.userId;
