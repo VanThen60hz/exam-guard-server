@@ -26,7 +26,7 @@ const upload = multer({
 const handleImageUpload = (req, res, next) => {
     upload(req, res, (err) => {
         if (err) {
-            if (err.message.includes("Invalid file type")) {
+            if (err.message && err.message.includes("Invalid file type")) {
                 return res.status(400).json({
                     success: false,
                     message: err.message,
