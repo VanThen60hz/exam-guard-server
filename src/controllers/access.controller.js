@@ -2,6 +2,8 @@
 
 const { OK, CREATED, SuccessResponse } = require("../core/success.response");
 const accessService = require("../services/access.service");
+const cloudinary = require("../configs/cloudinary");
+
 class AccessController {
     handlerRefreshToken = async (req, res, next) => {
         new OK({
