@@ -18,13 +18,23 @@ class AccessController {
     };
 
     signUp = async (req, res, next) => {
-        new CREATED({
-            message: "Register OK",
-            metadata: await accessService.signUp(req.body),
-            options: {
-                limit: 10,
-            },
-        }).send(res);
+        try {
+            if (req.files && req.files.avatar && req.files.avatar.length > 0) {
+                req.body.avatar = req.files.avatar[0].path;
+            }
+
+            const result = await accessService.signUp(req.body);
+
+            new CREATED({
+                message: "Register OK",
+                metadata: result,
+            }).send(res);
+        } catch (error) {
+            if (req.files && req.files.avatar) {
+                await cloudinary.uploader.destroy(req.files.avatar[0].filename);
+            }
+            next(error);
+        }
     };
 
     login = async (req, res, next) => {

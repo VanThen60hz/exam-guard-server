@@ -2,6 +2,7 @@
 
 const { SuccessResponse } = require("../core/success.response");
 const userService = require("../services/user.service");
+const cloudinary = require("../configs/cloudinary");
 
 class UserController {
     getProfile = async (req, res, next) => {
@@ -15,14 +16,25 @@ class UserController {
     };
 
     updateProfile = async (req, res, next) => {
-        const { userId } = req;
-        const userData = req.body;
-        const updatedProfile = await userService.updateUser(userId, userData);
+        try {
+            const { userId } = req;
 
-        new SuccessResponse({
-            message: "Profile updated successfully",
-            metadata: updatedProfile,
-        }).send(res);
+            if (req.files && req.files.avatar && req.files.avatar.length > 0) {
+                req.body.avatar = req.files.avatar[0].path;
+            }
+
+            const updatedProfile = await userService.updateUser(userId, req.body);
+
+            new SuccessResponse({
+                message: "Profile updated successfully",
+                metadata: updatedProfile,
+            }).send(res);
+        } catch (error) {
+            if (req.files && req.files.avatar) {
+                await cloudinary.uploader.destroy(req.files.avatar[0].filename);
+            }
+            next(error);
+        }
     };
 
     findUserById = async (req, res, next) => {
@@ -36,14 +48,25 @@ class UserController {
     };
 
     updateUser = async (req, res, next) => {
-        const { id } = req.params;
-        const userData = req.body;
-        const updatedUser = await userService.updateUser(id, userData);
+        try {
+            const { id } = req.params;
 
-        new SuccessResponse({
-            message: "User updated successfully",
-            metadata: updatedUser,
-        }).send(res);
+            if (req.files && req.files.avatar && req.files.avatar.length > 0) {
+                req.body.avatar = req.files.avatar[0].path;
+            }
+
+            const updatedUser = await userService.updateUser(id, req.body);
+
+            new SuccessResponse({
+                message: "User updated successfully",
+                metadata: updatedUser,
+            }).send(res);
+        } catch (error) {
+            if (req.files && req.files.avatar) {
+                await cloudinary.uploader.destroy(req.files.avatar[0].filename);
+            }
+            next(error);
+        }
     };
 
     deleteUser = async (req, res, next) => {
@@ -65,7 +88,6 @@ class UserController {
             };
             const { total, totalPages, users } = await userService.listUsers(filter, page, limit);
 
-            // Gửi phản hồi thành công
             new SuccessResponse({
                 message: "List of users retrieved successfully",
                 metadata: {

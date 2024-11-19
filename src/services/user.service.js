@@ -7,6 +7,7 @@ const userRepo = require("../repo/user.repo");
 const cheatingHistoryRepo = require("../repo/cheatingHistory.repo");
 const cheatingStatisticRepo = require("../repo/cheatingStatistic.repo");
 const gradeRepo = require("../repo/grade.repo");
+const cloudinary = require("../configs/cloudinary");
 
 class UserService {
     static findUserById = async (userId) => {
@@ -36,10 +37,21 @@ class UserService {
     };
 
     static updateUser = async (userId, userData) => {
-        const updatedUser = await userRepo.updateUser(userId, userData);
-        if (!updatedUser) {
+        const existingUser = await userRepo.findUserByUserId(userId);
+        if (!existingUser) {
             throw new BadRequestError("User not found");
         }
+
+        if (userData.avatar && existingUser.avatar) {
+            const publicId = existingUser.avatar.split("/").slice(-2).join("/").split(".")[0];
+            await cloudinary.uploader.destroy(publicId);
+        }
+
+        const updatedUser = await userRepo.updateUser(userId, userData);
+        if (!updatedUser) {
+            throw new BadRequestError("Failed to update user");
+        }
+
         return getInfoData({
             fields: [
                 "_id",
@@ -115,7 +127,7 @@ class UserService {
 
     static searchUsers = async (query, page, limit) => {
         const { totalUsers, users } = await userRepo.searchUsers(query, page, limit); // Gọi searchUsers từ repo
-        const totalPages = Math.ceil(totalUsers / limit); // Tính tổng số trang
+        const totalPages = Math.ceil(totalUsers / limit);
         return {
             total: totalUsers,
             totalPages,
