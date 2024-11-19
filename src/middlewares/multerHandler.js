@@ -24,6 +24,8 @@ const upload = multer({
 }).fields([{ name: "avatar", maxCount: 1 }]);
 
 const handleImageUpload = (req, res, next) => {
+    console.log(process.env.CLOUDINARY_NAME);
+
     upload(req, res, (err) => {
         if (err) {
             if (err.message && err.message.includes("Invalid file type")) {
