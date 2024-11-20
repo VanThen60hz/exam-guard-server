@@ -9,6 +9,7 @@ const addTimestampsMiddleware = (schema) => {
     schema.pre("save", function (next) {
         if (this.isNew) {
             this.createdAt = addSevenHours(this.createdAt || new Date());
+            this.timeDetected = addSevenHours(this.timeDetected || new Date());
         }
         this.updatedAt = addSevenHours(new Date());
         next();
