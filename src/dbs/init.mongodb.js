@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 // } = require("../configs/mongodb");
 
 // const connectString = `mongodb://${host}:${port}/${name}`;
-const connectString = `mongodb+srv://nguyenvthang2409:E00z60hz@mongo-cluster.i9hqpgd.mongodb.net/examguardPROD?retryWrites=true&w=majority&appName=mongo-cluster`;
+const connectString = process.env.MONGODB_URI;
 
 const { countConnect } = require("../helpers/check.connect");
 

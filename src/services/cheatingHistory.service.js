@@ -27,7 +27,7 @@ class CheatingHistoryService {
         cheatingResolve(cheatingStatistic, teacherId);
 
         return getInfoData({
-            fields: ["_id", "infractionType", "description", "student", "exam", "createdAt", "updatedAt"],
+            fields: ["_id", "infractionType", "description", "student", "exam", "timeDetected", "updatedAt"],
             object: newCheatingHistory,
         });
     }
@@ -59,7 +59,7 @@ class CheatingHistoryService {
             throw new BadRequestError("Cheating history not found");
         }
         return getInfoData({
-            fields: ["_id", "infractionType", "description", "timeDetected", "student", "createdAt", "updatedAt"],
+            fields: ["_id", "infractionType", "description", "student", "exam", "timeDetected", "updatedAt"],
             object: cheatingHistory,
         });
     }
@@ -79,7 +79,7 @@ class CheatingHistoryService {
 
         return cheatingHistories.map((cheatingHistory) =>
             getInfoData({
-                fields: ["_id", "infractionType", "description", "student", "examId", "createdAt", "updatedAt"],
+                fields: ["_id", "infractionType", "description", "student", "exam", "timeDetected", "updatedAt"],
                 object: cheatingHistory,
             }),
         );
@@ -109,7 +109,7 @@ class CheatingHistoryService {
             totalPages,
             cheatingHistories: cheatingHistories.map((cheatingHistory) =>
                 getInfoData({
-                    fields: ["_id", "infractionType", "description", "student", "examId", "createdAt", "updatedAt"],
+                    fields: ["_id", "infractionType", "description", "student", "exam", "timeDetected", "updatedAt"],
                     object: cheatingHistory,
                 }),
             ),
@@ -142,7 +142,7 @@ class CheatingHistoryService {
             totalPages,
             cheatingHistories: cheatingHistories.map((cheatingHistory) =>
                 getInfoData({
-                    fields: ["_id", "infractionType", "description", "student", "exam", "createdAt", "updatedAt"],
+                    fields: ["_id", "infractionType", "description", "student", "exam", "timeDetected", "updatedAt"],
                     object: cheatingHistory,
                 }),
             ),

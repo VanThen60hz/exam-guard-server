@@ -2,9 +2,8 @@
 const express = require("express");
 const examController = require("../../controllers/exam.controller");
 const { asyncHandler } = require("../../helpers/asyncHandler");
-const checkExamSubmission = require("../../utils/checkExamSubmission");
+const checkExamSubmission = require("../../middlewares/checkExamSubmission");
 const { teacherAuthentication, authentication } = require("../../auth/authUtils");
-const questionController = require("../../controllers/question.controller");
 const router = express.Router();
 
 // exam router for user

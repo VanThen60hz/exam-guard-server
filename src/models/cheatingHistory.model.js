@@ -24,7 +24,10 @@ const CheatingHistorySchema = new Schema(
         },
     },
     {
-        timestamps: true,
+        timestamps: {
+            createdAt: "timeDetected",
+            updatedAt: true,
+        },
         collection: COLLECTION_NAME,
     },
 );
