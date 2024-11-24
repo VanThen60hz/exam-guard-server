@@ -183,6 +183,8 @@ class CheatingStatisticService {
             cheatingStatistic = { ...cheatingStatistic._doc, ...updateData };
         }
 
+        const populatedStatistic = await cheatingStatisticRepo.findCheatingStatisticById(cheatingStatistic._id);
+
         return getInfoData({
             fields: [
                 "_id",
@@ -194,7 +196,7 @@ class CheatingStatisticService {
                 "createdAt",
                 "updatedAt",
             ],
-            object: cheatingStatistic,
+            object: populatedStatistic,
         });
     }
 }

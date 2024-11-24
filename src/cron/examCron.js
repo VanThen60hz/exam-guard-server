@@ -1,5 +1,6 @@
 const cron = require("node-cron");
 const examModel = require("../models/exam.model");
+const axios = require("axios");
 
 const startExamCron = () => {
     cron.schedule("*/10 * * * * *", async () => {
@@ -54,6 +55,8 @@ const startExamCron = () => {
                     completedExams.map((exam) => exam._id),
                 );
             }
+
+            await axios.get("https://exam-guard-server.onrender.com");
         } catch (error) {
             console.error("Error updating exam statuses:", error);
         }

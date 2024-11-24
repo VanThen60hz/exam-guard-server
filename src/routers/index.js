@@ -31,10 +31,10 @@ router.use("/api/user", require("./user"));
 // access router
 router.use("/api/auth", require("./access"));
 
-// router.get("/", (req, res, next) => {
-//     return res.status(200).json({
-//         message: "Hello World",
-//     });
-// });
+router.get("/", (req, res, next) => {
+    return res.status(200).json({
+        message: "Hello World",
+    });
+});
 
 module.exports = router;
