@@ -154,6 +154,14 @@ class UserService {
             ),
         };
     };
+
+    static findUserByEmailOrPhone = async (email, phone_number) => {
+        const user = await userRepo.findByEmailOrPhone(email, phone_number);
+        if (!user) {
+            throw new BadRequestError("User not found");
+        }
+        return user;
+    };
 }
 
 module.exports = UserService;

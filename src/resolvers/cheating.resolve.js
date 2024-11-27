@@ -1,26 +1,23 @@
-const amqp = require("amqplib");
+const { getRabbitMQChannel } = require("../configs/rabbitmq");
 
 const cheatingResolve = async (cheatingStatistic, teacherId) => {
-    const connection = await amqp.connect(
-        "amqps://qpjwovtb:gRLAwlqVnUhwKwD12Y6QLDQSplgDrf-i@octopus.rmq3.cloudamqp.com/qpjwovtb",
-    );
+    try {
+        const channel = await getRabbitMQChannel();
+        const queue = `cheating_notifications_teacher_${teacherId}`;
 
-    const channel = await connection.createChannel();
-    const queue = `cheating_notifications_teacher_${teacherId}`;
+        await channel.assertQueue(queue, { durable: false });
 
-    await channel.assertQueue(queue, { durable: false });
-    const message = JSON.stringify({
-        message: "Cheating statistic updated",
-        data: cheatingStatistic,
-        teacherId: teacherId,
-    });
+        const message = JSON.stringify({
+            message: "Cheating statistic updated",
+            data: cheatingStatistic,
+            teacherId: teacherId,
+        });
 
-    channel.sendToQueue(queue, Buffer.from(message));
-    console.log(`Sent cheating statistic notification to RabbitMQ for teacher ${teacherId}`);
-
-    setTimeout(() => {
-        connection.close();
-    }, 500);
+        channel.sendToQueue(queue, Buffer.from(message));
+        console.log(`Sent cheating statistic notification to RabbitMQ for teacher ${teacherId}`);
+    } catch (error) {
+        console.error("Error sending message to RabbitMQ:", error);
+    }
 };
 
 module.exports = {

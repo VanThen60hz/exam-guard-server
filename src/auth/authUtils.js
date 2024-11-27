@@ -32,7 +32,7 @@ const createTokenPair = async (payload, publicKey, privateKey) => {
                 console.error(`Error verify accessToken: ${err}`);
             } else {
                 // console.log(`Decoded accessToken: ${JSON.stringify(decode, null, 2)}`);
-                console.log(`Decoded accessToken: ${decode}`);
+                // console.log(`Decoded accessToken: ${decode}`);
             }
         });
 

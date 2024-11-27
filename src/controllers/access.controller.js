@@ -2,7 +2,9 @@
 
 const { OK, CREATED, SuccessResponse } = require("../core/success.response");
 const accessService = require("../services/access.service");
+const userService = require("../services/user.service");
 const cloudinary = require("../configs/cloudinary");
+const { storeOTP, deleteOTP, getOTP } = require("../services/redis.service");
 
 class AccessController {
     handlerRefreshToken = async (req, res, next) => {
@@ -51,6 +53,28 @@ class AccessController {
             message: "Logout OK",
             metadata: await accessService.logout(req.keyStore),
         }).send(res);
+    };
+
+    forgotPassword = async (req, res, next) => {
+        const { email } = req.body;
+
+        try {
+            const result = await accessService.forgotPassword(email);
+            res.status(200).json(result);
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    resetPassword = async (req, res, next) => {
+        const { email, otp, newPassword } = req.body;
+
+        try {
+            const result = await accessService.resetPassword({ email, otp, newPassword });
+            res.status(200).json(result);
+        } catch (error) {
+            next(error);
+        }
     };
 }
 

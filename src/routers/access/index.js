@@ -10,6 +10,10 @@ router.post("/signup", handleImageUpload, asyncHandler(accessController.signUp))
 
 router.post("/login", asyncHandler(accessController.login));
 
+router.post("/forgot-password", asyncHandler(accessController.forgotPassword));
+
+router.post("/reset-password", asyncHandler(accessController.resetPassword));
+
 router.use(authenticationV2);
 
 router.post("/logout", authentication, asyncHandler(accessController.logout));

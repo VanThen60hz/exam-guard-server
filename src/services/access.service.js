@@ -8,6 +8,9 @@ const { getInfoData } = require("../utils");
 const { BadRequestError, ConflictRequestError, UnauthorizedError } = require("../core/error.response");
 const roles = require("../constants/roles");
 const userRepo = require("../repo/user.repo");
+const { storeOTP, getOTP, deleteOTP } = require("./redis.service");
+const sendEmail = require("../utils/emailSender");
+const { log } = require("console");
 
 class AccessService {
     static handlerRefreshToken = async ({ refreshToken, user, keyStore }) => {
@@ -199,6 +202,42 @@ class AccessService {
     static logout = async (keyStore) => {
         const delKey = await keyTokenService.removeKeyToken(keyStore._id);
         return delKey;
+    };
+
+    static forgotPassword = async (email) => {
+        const user = await userRepo.findByEmail(email);
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        await storeOTP(`forgotPassword:${email}`, otp);
+
+        await sendEmail(email, "Password Reset OTP", `Your OTP is: ${otp}`);
+
+        return { message: "OTP sent to your email" };
+    };
+
+    static resetPassword = async ({ email, otp, newPassword }) => {
+        const storedOTP = await getOTP(`forgotPassword:${email}`);
+
+        if (!storedOTP || storedOTP !== otp) {
+            throw new Error("Invalid or expired OTP");
+        }
+
+        const user = await userRepo.findByEmail(email);
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await userRepo.updatePassword(user._id, hashedPassword);
+
+        await deleteOTP(`forgotPassword:${email}`);
+
+        return { message: "Password reset successfully" };
     };
 }
 

@@ -1,9 +1,8 @@
-const { createRabbitMqConnection } = require("../configs/rabbitmq");
+const { getRabbitMQChannel } = require("../configs/rabbitmq");
 
 async function createTeacherQueueConsumer(teacherId, io) {
     try {
-        const connection = await createRabbitMqConnection();
-        const channel = await connection.createChannel();
+        const channel = await getRabbitMQChannel();
         const queue = `cheating_notifications_teacher_${teacherId}`;
 
         await channel.assertQueue(queue, { durable: false });

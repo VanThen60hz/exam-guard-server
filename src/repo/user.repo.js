@@ -92,6 +92,22 @@ class UserRepo {
 
         return { totalUsers, users };
     }
+
+    static async findByEmailOrPhone(email, phone_number, select = this.selectFields) {
+        return await userModel
+            .findOne({
+                $or: [{ email }, { phone_number }],
+            })
+            .select(select)
+            .lean();
+    }
+
+    static findByResetToken = async (resetToken) => {
+        return userModel.findOne({ resetToken });
+    };
+    static async updatePassword(userId, hashedPassword) {
+        return await userModel.findByIdAndUpdate(userId, { password: hashedPassword }, { new: true });
+    }
 }
 
 module.exports = UserRepo;
