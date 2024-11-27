@@ -1,4 +1,4 @@
-const { getRabbitMQChannel } = require("../configs/rabbitmq");
+const { getRabbitMQChannel } = require("../configs/rabbitmq.config");
 
 const cheatingResolve = async (cheatingStatistic, teacherId) => {
     try {

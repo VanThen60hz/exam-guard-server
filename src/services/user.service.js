@@ -7,7 +7,7 @@ const userRepo = require("../repo/user.repo");
 const cheatingHistoryRepo = require("../repo/cheatingHistory.repo");
 const cheatingStatisticRepo = require("../repo/cheatingStatistic.repo");
 const gradeRepo = require("../repo/grade.repo");
-const cloudinary = require("../configs/cloudinary");
+const cloudinary = require("../configs/cloudinary.config");
 
 class UserService {
     static findUserById = async (userId) => {

@@ -3,7 +3,7 @@
 const { OK, CREATED, SuccessResponse } = require("../core/success.response");
 const accessService = require("../services/access.service");
 const userService = require("../services/user.service");
-const cloudinary = require("../configs/cloudinary");
+const cloudinary = require("../configs/cloudinary.config");
 const { storeOTP, deleteOTP, getOTP } = require("../services/redis.service");
 
 class AccessController {

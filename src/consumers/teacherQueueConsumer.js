@@ -1,4 +1,4 @@
-const { getRabbitMQChannel } = require("../configs/rabbitmq");
+const { getRabbitMQChannel } = require("../configs/rabbitmq.config");
 
 async function createTeacherQueueConsumer(teacherId, io) {
     try {

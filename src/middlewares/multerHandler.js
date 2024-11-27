@@ -1,6 +1,6 @@
 const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
-const cloudinary = require("../configs/cloudinary");
+const cloudinary = require("../configs/cloudinary.config");
 
 const fileFilter = (req, file, cb) => {
     const allowedMimeTypes = ["image/jpeg", "image/png", "image/jpg", "image/gif"];

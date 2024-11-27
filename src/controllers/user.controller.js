@@ -2,7 +2,7 @@
 
 const { SuccessResponse } = require("../core/success.response");
 const userService = require("../services/user.service");
-const cloudinary = require("../configs/cloudinary");
+const cloudinary = require("../configs/cloudinary.config");
 
 class UserController {
     getProfile = async (req, res, next) => {

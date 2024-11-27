@@ -3,7 +3,7 @@ const http = require("http");
 const socketIo = require("socket.io");
 const app = require("./src/app");
 const { handleSocketEvents } = require("./src/events/socketEvents");
-const { connectToRabbitMQ } = require("./src/configs/rabbitmq");
+const { connectToRabbitMQ } = require("./src/configs/rabbitmq.config");
 
 const { connectRedis } = require("./src/configs/redis.config");
 
