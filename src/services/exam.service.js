@@ -196,6 +196,34 @@ class ExamService {
         };
     }
 
+    static listExamsForStudent = async (filter = {}, page, limit) => {
+        const totalExams = await examRepo.countExams(filter);
+        const exams = await examRepo.listExams(filter, page, limit);
+        const totalPages = Math.ceil(totalExams / limit);
+        return {
+            total: totalExams,
+            totalPages,
+            exams: exams.map((exam) =>
+                getInfoData({
+                    fields: [
+                        "_id",
+                        "title",
+                        "description",
+                        "startTime",
+                        "endTime",
+                        "duration",
+                        "status",
+                        "questionCount",
+                        "teacher",
+                        "createdAt",
+                        "updatedAt",
+                    ],
+                    object: exam,
+                }),
+            ),
+        };
+    };
+
     static async filterExamsForStudent(filter, page = 1, limit = 10) {
         const { query, status } = filter;
 
