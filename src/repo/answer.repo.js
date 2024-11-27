@@ -81,7 +81,15 @@ class AnswerRepo {
 
     static async listAnswers(filter = {}, page = 1, limit = 10) {
         const skip = (page - 1) * limit;
-        return await answerModel.find(filter).skip(skip).limit(limit).lean();
+        return await answerModel
+            .find(filter)
+            .skip(skip)
+            .limit(limit)
+            .populate({
+                path: "question",
+                select: "questionText questionType questionScore correctAnswer",
+            })
+            .lean();
     }
 
     static async findAnswersByStudentAndQuestions(studentId, questionIds) {

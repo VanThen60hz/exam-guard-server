@@ -101,7 +101,6 @@ class AnswerService {
         }
 
         const examQuestions = await questionRepo.findQuestionsByExam(examId);
-        console.log("Exam Questions:", examQuestions);
 
         if (!Array.isArray(examQuestions)) {
             throw new Error("Expected examQuestions to be an array");
