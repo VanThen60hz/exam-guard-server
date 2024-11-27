@@ -8,7 +8,7 @@ const { getInfoData } = require("../utils");
 const { BadRequestError, ConflictRequestError, UnauthorizedError } = require("../core/error.response");
 const roles = require("../constants/roles");
 const userRepo = require("../repo/user.repo");
-const { storeOTP, getOTP, deleteOTP } = require("./redis.service");
+const redisService = require("./redis.service");
 const sendEmail = require("../utils/emailSender");
 const { log } = require("console");
 
@@ -212,7 +212,7 @@ class AccessService {
 
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-        await storeOTP(`forgotPassword:${email}`, otp);
+        await redisService.storeOTP(`forgotPassword:${email}`, otp);
 
         await sendEmail(email, "Password Reset OTP", `Your OTP is: ${otp}`);
 
@@ -220,7 +220,7 @@ class AccessService {
     };
 
     static resetPassword = async ({ email, otp, newPassword }) => {
-        const storedOTP = await getOTP(`forgotPassword:${email}`);
+        const storedOTP = await redisService.getOTP(`forgotPassword:${email}`);
 
         if (!storedOTP || storedOTP !== otp) {
             throw new Error("Invalid or expired OTP");
@@ -235,7 +235,7 @@ class AccessService {
 
         await userRepo.updatePassword(user._id, hashedPassword);
 
-        await deleteOTP(`forgotPassword:${email}`);
+        await redisService.deleteOTP(`forgotPassword:${email}`);
 
         return { message: "Password reset successfully" };
     };

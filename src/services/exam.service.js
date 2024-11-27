@@ -1,6 +1,7 @@
 "use strict";
 const { getInfoData } = require("../utils");
 const { BadRequestError, UnauthorizedError, ForbiddenError } = require("../core/error.response");
+const redisService = require("./redis.service");
 const examRepo = require("../repo/exam.repo");
 const gradeRepo = require("../repo/grade.repo");
 const questionRepo = require("../repo/question.repo");
@@ -8,7 +9,7 @@ const answerRepo = require("../repo/answer.repo");
 const schedule = require("node-schedule");
 
 class ExamService {
-    static findExamById = async (examId, userId) => {
+    static async findExamById(examId, userId) {
         const exam = await examRepo.findExamById(examId);
 
         if (!exam) {
@@ -19,7 +20,7 @@ class ExamService {
             throw new UnauthorizedError("You are not authorized to access this exam");
         }
 
-        const studentCount = this.calculateStudentCount(examId);
+        const studentCount = await this.calculateStudentCount(examId);
 
         return {
             ...getInfoData({
@@ -40,7 +41,7 @@ class ExamService {
             }),
             studentCount,
         };
-    };
+    }
 
     static createExam = async (req) => {
         const teacherId = req.userId;
@@ -108,68 +109,12 @@ class ExamService {
         if (!deletedExam) {
             throw new BadRequestError("Exam not found");
         }
+
+        const studentCountKey = `exam:${examId}:studentCount`;
+        await redisService.deleteKey(studentCountKey);
+
         return { message: "Exam deleted successfully" };
     };
-
-    static listExamsForStudent = async (filter = {}, page, limit) => {
-        const totalExams = await examRepo.countExams(filter);
-        const exams = await examRepo.listExams(filter, page, limit);
-        const totalPages = Math.ceil(totalExams / limit);
-        return {
-            total: totalExams,
-            totalPages,
-            exams: exams.map((exam) =>
-                getInfoData({
-                    fields: [
-                        "_id",
-                        "title",
-                        "description",
-                        "startTime",
-                        "endTime",
-                        "duration",
-                        "status",
-                        "questionCount",
-                        "teacher",
-                        "createdAt",
-                        "updatedAt",
-                    ],
-                    object: exam,
-                }),
-            ),
-        };
-    };
-
-    static async listExamsForTeacher(filter = {}, page, limit) {
-        const totalExams = await examRepo.countExams(filter);
-        const exams = await examRepo.listExams(filter, page, limit);
-        const totalPages = Math.ceil(totalExams / limit);
-
-        return {
-            total: totalExams,
-            totalPages,
-            exams: exams.map((exam) => {
-                const studentCount = this.calculateStudentCount(exam._id);
-                return {
-                    ...getInfoData({
-                        fields: [
-                            "_id",
-                            "title",
-                            "description",
-                            "startTime",
-                            "endTime",
-                            "duration",
-                            "questionCount",
-                            "status",
-                            "createdAt",
-                            "updatedAt",
-                        ],
-                        object: exam,
-                    }),
-                    studentCount,
-                };
-            }),
-        };
-    }
 
     static async filterExamsForTeacher(filter, page = 1, limit = 10) {
         const { query, teacher: teacherId, status } = filter;
@@ -182,11 +127,9 @@ class ExamService {
         const { totalExams, exams } = await examRepo.filterExams(query, page, limit, additionalFilter);
         const totalPages = Math.ceil(totalExams / limit);
 
-        return {
-            total: totalExams,
-            totalPages,
-            exams: exams.map((exam) => {
-                const studentCount = this.calculateStudentCount(exam._id);
+        const examsWithStudentCount = await Promise.all(
+            exams.map(async (exam) => {
+                const studentCount = await this.calculateStudentCount(exam._id);
                 return {
                     ...getInfoData({
                         fields: [
@@ -207,6 +150,49 @@ class ExamService {
                     studentCount,
                 };
             }),
+        );
+
+        return {
+            total: totalExams,
+            totalPages,
+            exams: examsWithStudentCount,
+        };
+    }
+
+    static async listExamsForTeacher(filter = {}, page, limit) {
+        const totalExams = await examRepo.countExams(filter);
+        const exams = await examRepo.listExams(filter, page, limit);
+        const totalPages = Math.ceil(totalExams / limit);
+
+        // Sử dụng Promise.all để chờ tất cả các Promise trong map hoàn thành
+        const examsWithStudentCount = await Promise.all(
+            exams.map(async (exam) => {
+                const studentCount = await this.calculateStudentCount(exam._id);
+                return {
+                    ...getInfoData({
+                        fields: [
+                            "_id",
+                            "title",
+                            "description",
+                            "startTime",
+                            "endTime",
+                            "duration",
+                            "questionCount",
+                            "status",
+                            "createdAt",
+                            "updatedAt",
+                        ],
+                        object: exam,
+                    }),
+                    studentCount,
+                };
+            }),
+        );
+
+        return {
+            total: totalExams,
+            totalPages,
+            exams: examsWithStudentCount,
         };
     }
 
@@ -289,6 +275,9 @@ class ExamService {
 
         const newGrade = await this.createGrade(studentId, examId, score);
 
+        const studentCountKey = `exam:${examId}:studentCount`;
+        await redisService.decrement(studentCountKey);
+
         return { message: "Exam submitted successfully", newGrade };
     }
 
@@ -300,6 +289,9 @@ class ExamService {
             const submissionTime = existingJob.nextInvocation().toDate();
             return submissionTime;
         }
+
+        const studentCountKey = `exam:${exam._id}:studentCount`;
+        await redisService.increment(studentCountKey);
 
         const submissionTime = new Date(Date.now() + exam.duration * 60 * 1000);
 
@@ -417,11 +409,10 @@ class ExamService {
         });
     }
 
-    static calculateStudentCount(examId) {
-        return Object.keys(schedule.scheduledJobs).filter((jobName) => {
-            const regex = new RegExp(`^submission_${examId}_(.+)$`);
-            return regex.test(jobName);
-        }).length;
+    static async calculateStudentCount(examId) {
+        const key = `exam:${examId}:studentCount`;
+        const count = await redisService.getValue(key);
+        return count ? parseInt(count, 10) : 0;
     }
 }
 
