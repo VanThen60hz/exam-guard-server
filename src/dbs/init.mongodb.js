@@ -1,12 +1,12 @@
 "use strict";
 
 const mongoose = require("mongoose");
-// const {
-//     db: { host, name, port },
-// } = require("../configs/mongodb.config");
+const {
+    db: { host, name, port },
+} = require("../configs/mongodb.config");
 
-// const connectString = `mongodb://${host}:${port}/${name}`;
-const connectString = process.env.MONGODB_URI;
+const connectString = `mongodb://${host}:${port}/${name}`;
+// const connectString = process.env.MONGODB_URI;
 
 const { countConnect } = require("../helpers/check.connect");
 

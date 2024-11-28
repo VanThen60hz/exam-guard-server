@@ -121,7 +121,7 @@ class AnswerService {
             totalPages,
             answers: answers.map((answer) =>
                 getInfoData({
-                    fields: ["_id", "answerText", "isCorrect", "question", "student", "createdAt", "updatedAt"],
+                    fields: ["_id", "answerText", "isCorrect", "question", "createdAt", "updatedAt"],
                     object: answer,
                 }),
             ),

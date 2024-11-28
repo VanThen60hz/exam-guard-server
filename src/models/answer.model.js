@@ -21,7 +21,7 @@ const AnswerSchema = new Schema(
         student: {
             type: Schema.Types.ObjectId,
             required: true,
-            ref: "Student",
+            ref: "User",
         },
     },
     {

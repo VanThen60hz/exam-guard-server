@@ -23,7 +23,7 @@ class AnswerRepo {
             })
             .select(select)
             .populate("question", "questionText questionScore correctAnswer")
-            .populate("student", "_id username email name")
+            .populate("student", "_id username email name avatar")
             .lean();
     }
 
@@ -88,6 +88,10 @@ class AnswerRepo {
             .populate({
                 path: "question",
                 select: "questionText questionType questionScore correctAnswer options",
+            })
+            .populate({
+                path: "student",
+                select: "_id username name email name avatar",
             })
             .lean();
     }
