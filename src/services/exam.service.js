@@ -20,7 +20,7 @@ class ExamService {
             throw new UnauthorizedError("You are not authorized to access this exam");
         }
 
-        const studentCount = await this.calculateStudentCount(examId);
+        const studentCount = await this._calculateStudentCount(examId);
 
         return {
             ...getInfoData({
@@ -129,7 +129,7 @@ class ExamService {
 
         const examsWithStudentCount = await Promise.all(
             exams.map(async (exam) => {
-                const studentCount = await this.calculateStudentCount(exam._id);
+                const studentCount = await this._calculateStudentCount(exam._id);
                 return {
                     ...getInfoData({
                         fields: [
@@ -167,7 +167,7 @@ class ExamService {
         // Sử dụng Promise.all để chờ tất cả các Promise trong map hoàn thành
         const examsWithStudentCount = await Promise.all(
             exams.map(async (exam) => {
-                const studentCount = await this.calculateStudentCount(exam._id);
+                const studentCount = await this._calculateStudentCount(exam._id);
                 return {
                     ...getInfoData({
                         fields: [
@@ -256,9 +256,9 @@ class ExamService {
     }
 
     static async joinExam(examId, studentId, page = 1, limit = 10) {
-        const exam = await this.validateExamAndStudent(examId, studentId);
+        const exam = await this._validateExamAndStudent(examId, studentId);
 
-        const submissionTime = await this.scheduleExamSubmissionIfNeeded(exam, studentId);
+        const submissionTime = await this._scheduleExamSubmissionIfNeeded(exam, studentId);
         const remainingTimeMs = submissionTime ? submissionTime - Date.now() : 0;
 
         const minutes = Math.floor(remainingTimeMs / 60000);
@@ -283,25 +283,25 @@ class ExamService {
     }
 
     static async submitExam(examId, studentId, answers) {
-        await this.validateExamAndStudent(examId, studentId);
+        await this._validateExamAndStudent(examId, studentId);
 
-        answers = this.normalizeAnswers(answers);
+        answers = this._normalizeAnswers(answers);
 
-        await this.checkIfAlreadySubmitted(examId, studentId);
+        await this._checkIfAlreadySubmitted(examId, studentId);
 
-        const questions = await this.fetchQuestions(examId);
-        const existingAnswersMap = await this.getExistingAnswersMap(studentId, questions);
+        const questions = await this._fetchQuestions(examId);
+        const existingAnswersMap = await this._getExistingAnswersMap(studentId, questions);
 
-        const { newAnswers, updatedAnswers, score } = this.calculateAnswersAndScore(
+        const { newAnswers, updatedAnswers, score } = this._calculateAnswersAndScore(
             answers,
             questions,
             existingAnswersMap,
             studentId,
         );
 
-        await this.saveAnswers(newAnswers, updatedAnswers);
+        await this._saveAnswers(newAnswers, updatedAnswers);
 
-        const newGrade = await this.createGrade(studentId, examId, score);
+        const newGrade = await this._createGrade(studentId, examId, score);
 
         const studentCountKey = `exam:${examId}:studentCount`;
         const updatedCount = await redisService.decrement(studentCountKey);
@@ -312,7 +312,7 @@ class ExamService {
         return { message: "Exam submitted successfully", newGrade };
     }
 
-    static async scheduleExamSubmissionIfNeeded(exam, studentId) {
+    static async _scheduleExamSubmissionIfNeeded(exam, studentId) {
         const jobName = `submission_${exam._id}_${studentId}`;
         const existingJob = schedule.scheduledJobs[jobName];
 
@@ -343,7 +343,7 @@ class ExamService {
         return submissionTime;
     }
 
-    static async validateExamAndStudent(examId, studentId) {
+    static async _validateExamAndStudent(examId, studentId) {
         const exam = await examRepo.findExamById(examId);
         if (!exam) {
             throw new BadRequestError("Exam not found");
@@ -354,18 +354,18 @@ class ExamService {
         return exam;
     }
 
-    static normalizeAnswers(answers) {
+    static _normalizeAnswers(answers) {
         return answers && answers.length > 0 ? answers : [];
     }
 
-    static async checkIfAlreadySubmitted(examId, studentId) {
+    static async _checkIfAlreadySubmitted(examId, studentId) {
         const existingGrade = await gradeRepo.findGradeByStudentAndExam(studentId, examId);
         if (existingGrade) {
             throw new BadRequestError("You have already submitted this exam.");
         }
     }
 
-    static async fetchQuestions(examId) {
+    static async _fetchQuestions(examId) {
         const questions = await questionRepo.findQuestionsByExam(examId);
         if (!questions || questions.length === 0) {
             throw new BadRequestError("No questions found for this exam");
@@ -373,7 +373,7 @@ class ExamService {
         return questions;
     }
 
-    static async getExistingAnswersMap(studentId, questions) {
+    static async _getExistingAnswersMap(studentId, questions) {
         const questionIds = questions.map((q) => q._id);
         const existingAnswers = await answerRepo.findAnswersByStudentAndQuestions(studentId, questionIds);
         return existingAnswers.reduce((map, ans) => {
@@ -382,7 +382,7 @@ class ExamService {
         }, {});
     }
 
-    static calculateAnswersAndScore(answers, questions, existingAnswersMap, studentId) {
+    static _calculateAnswersAndScore(answers, questions, existingAnswersMap, studentId) {
         const newAnswers = [];
         const updatedAnswers = [];
         const score = questions.reduce((total, questionData) => {
@@ -421,7 +421,7 @@ class ExamService {
         return { newAnswers, updatedAnswers, score };
     }
 
-    static async saveAnswers(newAnswers, updatedAnswers) {
+    static async _saveAnswers(newAnswers, updatedAnswers) {
         if (newAnswers.length > 0) {
             await answerRepo.insertManyAnswers(newAnswers);
         }
@@ -431,8 +431,8 @@ class ExamService {
         }
     }
 
-    static async createGrade(studentId, examId, score) {
-        return await gradeRepo.createGrade({
+    static async _createGrade(studentId, examId, score) {
+        return await gradeRepo._createGrade({
             student: studentId,
             exam: examId,
             score,
@@ -440,7 +440,7 @@ class ExamService {
         });
     }
 
-    static async calculateStudentCount(examId) {
+    static async _calculateStudentCount(examId) {
         const key = `exam:${examId}:studentCount`;
         const count = await redisService.getValue(key);
         return count ? parseInt(count, 10) : 0;

@@ -12,9 +12,9 @@ const { cheatingResolve } = require("../resolvers/cheating.resolve");
 
 class CheatingHistoryService {
     static async createCheatingHistory(cheatingData, examId, studentId) {
-        await this.validateData(examId, studentId);
+        await this._validateData(examId, studentId);
 
-        const newCheatingHistory = await this.createHistoryEntry(cheatingData, examId, studentId);
+        const newCheatingHistory = await this._createHistoryEntry(cheatingData, examId, studentId);
 
         const teacherId = await examRepo.getTeacherId(examId);
 
@@ -32,7 +32,7 @@ class CheatingHistoryService {
         });
     }
 
-    static async validateData(examId, studentId) {
+    static async _validateData(examId, studentId) {
         if (!studentId || !examId) {
             throw new BadRequestError("Student ID and Exam ID are required");
         }
@@ -43,7 +43,7 @@ class CheatingHistoryService {
         }
     }
 
-    static async createHistoryEntry(cheatingData, examId, studentId) {
+    static async _createHistoryEntry(cheatingData, examId, studentId) {
         const newCheatingHistoryData = {
             ...cheatingData,
             student: studentId,

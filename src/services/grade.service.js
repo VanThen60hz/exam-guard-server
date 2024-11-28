@@ -70,7 +70,7 @@ class GradeService {
     };
 
     static async listGradesByExamId(examId, teacherId, page = 1, limit = 10) {
-        await this.verifyExamOwnership(examId, teacherId);
+        await this._verifyExamOwnership(examId, teacherId);
 
         const filter = { exam: examId };
         const totalGrades = await gradeRepo.countGrades(filter);
@@ -90,7 +90,7 @@ class GradeService {
     }
 
     static async searchGradesByExamId(examId, query, teacherId, page = 1, limit = 10) {
-        await this.verifyExamOwnership(examId, teacherId);
+        await this._verifyExamOwnership(examId, teacherId);
 
         const { totalGrades, grades } = await gradeRepo.searchGradesByExamWithReferences(examId, query, page, limit);
         const totalPages = Math.ceil(totalGrades / limit);
@@ -107,7 +107,7 @@ class GradeService {
         };
     }
 
-    static async verifyExamOwnership(examId, teacherId) {
+    static async _verifyExamOwnership(examId, teacherId) {
         const exam = await examRepo.findExamById(examId);
 
         if (!exam) {
