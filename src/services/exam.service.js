@@ -432,7 +432,7 @@ class ExamService {
     }
 
     static async _createGrade(studentId, examId, score) {
-        return await gradeRepo._createGrade({
+        return await gradeRepo.createGrade({
             student: studentId,
             exam: examId,
             score,
