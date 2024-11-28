@@ -87,7 +87,7 @@ class AnswerRepo {
             .limit(limit)
             .populate({
                 path: "question",
-                select: "questionText questionType questionScore correctAnswer",
+                select: "questionText questionType questionScore correctAnswer options",
             })
             .lean();
     }
