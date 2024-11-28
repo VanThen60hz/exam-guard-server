@@ -304,7 +304,10 @@ class ExamService {
         const newGrade = await this.createGrade(studentId, examId, score);
 
         const studentCountKey = `exam:${examId}:studentCount`;
-        await redisService.decrement(studentCountKey);
+        const updatedCount = await redisService.decrement(studentCountKey);
+        if (updatedCount === 0) {
+            await redisService.deleteKey(studentCountKey);
+        }
 
         return { message: "Exam submitted successfully", newGrade };
     }
