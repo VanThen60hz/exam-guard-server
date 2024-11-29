@@ -104,8 +104,9 @@ class GradeController {
 
     viewCompletedGrades = async (req, res, next) => {
         const studentId = req.userId;
+        const { page = 1, limit = 10 } = req.query;
 
-        const responseData = await gradeService.listGradesByStudent(studentId);
+        const responseData = await gradeService.listGradesByStudent(studentId, page, limit);
 
         new SuccessResponse({
             message: "List of completed grades retrieved successfully",

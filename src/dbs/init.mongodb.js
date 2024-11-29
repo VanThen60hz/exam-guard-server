@@ -14,6 +14,7 @@ class Database {
     constructor() {
         this._connect();
     }
+
     _connect(type = "mongodb") {
         //dev
         if (1 != 1) {
