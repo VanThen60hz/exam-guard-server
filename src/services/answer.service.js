@@ -3,6 +3,7 @@ const { getInfoData } = require("../utils");
 const { BadRequestError, UnauthorizedError, ForbiddenError } = require("../core/error.response");
 const questionRepo = require("../repo/question.repo");
 const answerRepo = require("../repo/answer.repo");
+const userRepo = require("../repo/user.repo");
 
 class AnswerService {
     static findAnswerById = async (answerId, userId) => {
@@ -112,6 +113,8 @@ class AnswerService {
 
         const totalAnswers = await answerRepo.countAnswers(filter);
 
+        const student = await userRepo.findUserByUserId(studentId);
+
         const answers = await answerRepo.listAnswers(filter, page, limit);
 
         const totalPages = Math.ceil(totalAnswers / limit);
@@ -119,6 +122,10 @@ class AnswerService {
         return {
             total: totalAnswers,
             totalPages,
+            student: getInfoData({
+                fields: ["_id", "username", "name", "email", "avatar"],
+                object: student,
+            }),
             answers: answers.map((answer) =>
                 getInfoData({
                     fields: ["_id", "answerText", "isCorrect", "question", "createdAt", "updatedAt"],
