@@ -305,6 +305,7 @@ class ExamService {
 
         const studentCountKey = `exam:${examId}:studentCount`;
         const updatedCount = await redisService.decrement(studentCountKey);
+
         if (updatedCount === 0) {
             await redisService.deleteKey(studentCountKey);
         }

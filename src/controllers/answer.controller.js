@@ -27,7 +27,9 @@ class AnswerController {
 
     listAnswersByQuestion = async (req, res, next) => {
         const { questionId } = req.params;
-        const answers = await answerService.listAnswersByQuestion(questionId);
+        const { page, limit } = req.query;
+
+        const answers = await answerService.listAnswersByQuestion(questionId, page, limit);
 
         new SuccessResponse({
             message: "Answers retrieved successfully",
