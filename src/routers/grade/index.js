@@ -5,8 +5,9 @@ const { asyncHandler } = require("../../helpers/asyncHandler");
 const { teacherAuthentication, studentAuthentication, authentication } = require("../../auth/authUtils"); // Giả sử đã thêm các middleware xác thực cho giáo viên và học sinh
 const router = express.Router();
 
-router.get("/:id", authentication, asyncHandler(gradeController.getGradeById));
-router.get("/view-grade/:examId", authentication, asyncHandler(gradeController.viewGrade));
+router.get("/view-completed", authentication, asyncHandler(gradeController.viewCompletedGrades));
+
+router.get("/view-grade/:examId", authentication, asyncHandler(gradeController.viewGradeByExamId));
 
 router.use(teacherAuthentication);
 

@@ -86,7 +86,7 @@ class GradeController {
         }).send(res);
     };
 
-    viewGrade = async (req, res, next) => {
+    viewGradeByExamId = async (req, res, next) => {
         const { examId } = req.params;
 
         if (!examId) {
@@ -94,11 +94,26 @@ class GradeController {
         }
 
         const studentId = req.userId;
-        const gradeData = await gradeService.viewGrade(examId, studentId);
+        const gradeData = await gradeService.viewGradeByExamId(examId, studentId);
 
         new SuccessResponse({
             message: "Grade for exam retrieved successfully",
             metadata: gradeData,
+        }).send(res);
+    };
+
+    viewCompletedGrades = async (req, res, next) => {
+        const studentId = req.userId;
+
+        const responseData = await gradeService.listGradesByStudent(studentId);
+
+        new SuccessResponse({
+            message: "List of completed grades retrieved successfully",
+            metadata: {
+                total: responseData.total,
+                totalPages: responseData.totalPages,
+                grades: responseData.grades,
+            },
         }).send(res);
     };
 }

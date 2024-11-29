@@ -52,6 +52,16 @@ class GradeRepo {
             .lean();
     }
 
+    static async listGradesByStudent(studentId, page = 1, limit = 10) {
+        const skip = (page - 1) * limit;
+        return await gradeModel
+            .find({ student: studentId })
+            .skip(skip)
+            .limit(limit)
+            .populate("exam", "_id teacher title description")
+            .lean();
+    }
+
     static async searchGradesByExam(filter = {}, page = 1, limit = 10) {
         const skip = (page - 1) * limit;
         return await gradeModel

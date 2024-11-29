@@ -89,6 +89,23 @@ class GradeService {
         };
     }
 
+    static async listGradesByStudent(studentId, page = 1, limit = 10) {
+        const totalGrades = await gradeRepo.countGrades({ student: studentId });
+        const grades = await gradeRepo.listGradesByStudent(studentId, page, limit);
+        const totalPages = Math.ceil(totalGrades / limit);
+
+        return {
+            total: totalGrades,
+            totalPages,
+            grades: grades.map((grade) =>
+                getInfoData({
+                    fields: ["_id", "score", "exam", "createdAt", "updatedAt"],
+                    object: grade,
+                }),
+            ),
+        };
+    }
+
     static async searchGradesByExamId(examId, query, teacherId, page = 1, limit = 10) {
         await this._verifyExamOwnership(examId, teacherId);
 
@@ -137,7 +154,7 @@ class GradeService {
         };
     };
 
-    static async viewGrade(examId, studentId) {
+    static async viewGradeByExamId(examId, studentId) {
         const grade = await gradeRepo.findGradeByStudentAndExam(studentId, examId);
 
         if (!grade) {
