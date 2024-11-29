@@ -18,7 +18,7 @@ const userSchema = new Schema(
         dob: { type: Date, required: true },
         address: { type: String },
         phone_number: { type: String, required: true },
-        status: { type: String, required: true, enum: ["ACTIVE", "INACTIVE", "SUSPENDED"], default: "INACTIVE" },
+        status: { type: String, required: true, enum: ["ACTIVE", "INACTIVE"], default: "INACTIVE" },
     },
     {
         timestamps: true,
