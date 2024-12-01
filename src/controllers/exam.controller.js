@@ -59,7 +59,8 @@ class ExamController {
         } else {
             if (teacher) filter.teacher = teacher;
             filter.status = "In Progress";
-            responseData = await examService.listExamsForStudent(filter, page, limit);
+            const studentId = req.userId;
+            responseData = await examService.listExamsForStudent(filter, page, limit, studentId);
         }
 
         new SuccessResponse({
