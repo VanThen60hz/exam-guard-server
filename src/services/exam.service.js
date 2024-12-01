@@ -196,10 +196,21 @@ class ExamService {
         };
     }
 
-    static listExamsForStudent = async (filter = {}, page, limit) => {
-        const totalExams = await examRepo.countExams(filter);
-        const exams = await examRepo.listExams(filter, page, limit);
+    static listExamsForStudent = async (filter = {}, page, limit, studentId) => {
+        const completedExams = await gradeRepo.listGradesByStudent(studentId);
+
+        const completedExamIds = completedExams.map((grade) => grade?.exam?._id).filter((id) => id);
+
+        const updatedFilter = {
+            ...filter,
+            _id: { $nin: completedExamIds },
+        };
+
+        const totalExams = await examRepo.countExams(updatedFilter);
+        const exams = await examRepo.listExams(updatedFilter, page, limit);
+
         const totalPages = Math.ceil(totalExams / limit);
+
         return {
             total: totalExams,
             totalPages,
