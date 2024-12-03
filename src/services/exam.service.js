@@ -314,11 +314,18 @@ class ExamService {
 
         const newGrade = await this._createGrade(studentId, examId, score);
 
-        const studentCountKey = `exam:${examId}:studentCount`;
-        const updatedCount = await redisService.decrement(studentCountKey);
+        if (newGrade) {
+            schedule.cancelJob(`submission_${examId}_${studentId}`);
+        }
 
-        if (updatedCount === 0) {
-            await redisService.deleteKey(studentCountKey);
+        const studentCountKey = `exam:${examId}:studentCount`;
+        const existStudentCountKey = redisService.exists(studentCountKey);
+        if (existStudentCountKey) {
+            const updatedCount = await redisService.decrement(studentCountKey);
+
+            if (updatedCount === 0) {
+                await redisService.deleteKey(studentCountKey);
+            }
         }
 
         return { message: "Exam submitted successfully", newGrade };
