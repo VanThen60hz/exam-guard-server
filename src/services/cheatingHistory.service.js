@@ -3,10 +3,11 @@
 const amqp = require("amqplib");
 const { getInfoData } = require("../utils");
 const { BadRequestError, UnauthorizedError, ForbiddenError } = require("../core/error.response");
+const NotificationTypes = require("../constants/notificationType");
 
+const notificationService = require("./notification.service");
 const CheatingStatisticService = require("./cheatingStatistic.service");
 const cheatingHistoryRepo = require("../repo/cheatingHistory.repo");
-const cheatingStatisticRepo = require("../repo/cheatingStatistic.repo");
 const examRepo = require("../repo/exam.repo");
 const { cheatingResolve } = require("../resolvers/cheating.resolve");
 
@@ -25,6 +26,19 @@ class CheatingHistoryService {
         );
 
         cheatingResolve(cheatingStatistic, teacherId);
+
+        const notificationData = await cheatingHistoryRepo.findCheatingHistoryById(newCheatingHistory._id);
+
+        await notificationService.pushNotification({
+            type: NotificationTypes.CHEATING_NEW,
+            receivedId: teacherId,
+            senderId: studentId,
+            options: {
+                studentName: notificationData?.student?.username,
+                infractionType: notificationData?.infractionType,
+                examTitle: notificationData?.exam?.title,
+            },
+        });
 
         return getInfoData({
             fields: ["_id", "infractionType", "description", "student", "exam", "timeDetected", "updatedAt"],

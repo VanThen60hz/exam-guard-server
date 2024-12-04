@@ -10,6 +10,9 @@ const router = express.Router();
 // // check permission
 // router.use(permission("0000"));
 
+// notification router
+router.use("/api/notification", require("./notification"));
+
 // cheating router
 router.use("/api/cheating", require("./cheating"));
 

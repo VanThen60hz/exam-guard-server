@@ -1,7 +1,6 @@
 "use strict";
 
 const { SuccessResponse } = require("../core/success.response");
-const { UnauthorizedError } = require("../core/error.response");
 const gradeService = require("../services/grade.service");
 
 class GradeController {
