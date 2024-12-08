@@ -3,7 +3,7 @@ const examModel = require("../models/exam.model");
 const axios = require("axios");
 
 const startExamCron = () => {
-    cron.schedule("*/10 * * * * *", async () => {
+    cron.schedule("*/30 * * * * *", async () => {
         const currentTimeUTC = new Date();
         const currentTimeVN = new Date(currentTimeUTC.getTime() + 7 * 60 * 60 * 1000);
 
