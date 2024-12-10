@@ -1,3 +1,4 @@
+const InfractionTypes = require("../constants/infractionType");
 const { addTimestampsMiddleware } = require("../utils/dateHelper");
 
 const { Schema, model } = require("mongoose");
@@ -9,7 +10,7 @@ const CheatingHistorySchema = new Schema(
         infractionType: {
             type: String,
             required: true,
-            enum: ["Face", "Switch Tab", "Screen Capture"],
+            enum: Object.values(InfractionTypes),
         },
         description: { type: String },
         exam: {

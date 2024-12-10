@@ -1,5 +1,6 @@
 "use strict";
 
+const QuestionTypes = require("../constants/questionType");
 const { addTimestampsMiddleware } = require("../utils/dateHelper");
 
 const { Schema, model } = require("mongoose");
@@ -16,7 +17,7 @@ const QuestionSchema = new Schema(
         questionType: {
             type: String,
             required: true,
-            enum: ["Single Choice", "Multiple Choice", "True/False", "Essay"],
+            enum: Object.values(QuestionTypes),
         },
         questionScore: {
             type: Number,

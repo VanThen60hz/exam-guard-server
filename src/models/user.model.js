@@ -2,6 +2,7 @@
 
 const { model, Schema } = require("mongoose");
 const { addTimestampsMiddleware } = require("../utils/dateHelper");
+const { UserRoles, Genders, UserStatus } = require("../constants/userEnum");
 const DOCUMENT_NAME = "User";
 const COLLECTION_NAME = "users";
 
@@ -10,15 +11,15 @@ const userSchema = new Schema(
         username: { type: String, required: true, unique: true },
         password: { type: String, required: true },
         name: { type: String, required: true },
-        role: { type: String, required: true, enum: ["ADMIN", "TEACHER", "STUDENT"] },
+        role: { type: String, required: true, enum: Object.values(UserRoles) },
         email: { type: String, required: true, unique: true },
         avatar: { type: String, default: "" },
-        gender: { type: String, required: true, enum: ["MALE", "FEMALE"] },
+        gender: { type: String, required: true, enum: Object.values(Genders) },
         ssn: { type: Number, required: true },
         dob: { type: Date, required: true },
         address: { type: String },
         phone_number: { type: String, required: true },
-        status: { type: String, required: true, enum: ["ACTIVE", "INACTIVE"], default: "INACTIVE" },
+        status: { type: String, required: true, enum: Object.values(UserStatus), default: UserStatus.INACTIVE },
     },
     {
         timestamps: true,

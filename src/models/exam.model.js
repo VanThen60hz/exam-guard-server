@@ -1,5 +1,6 @@
 "use strict";
 
+const ExamStatus = require("../constants/examStatus");
 const { addTimestampsMiddleware } = require("../utils/dateHelper");
 
 const { Schema, model } = require("mongoose");
@@ -16,8 +17,8 @@ const ExamSchema = new Schema(
         status: {
             type: String,
             required: true,
-            enum: ["Scheduled", "In Progress", "Completed", "Canceled"],
-            default: "Scheduled",
+            enum: Object.values(ExamStatus),
+            default: ExamStatus.SCHEDULED,
         },
         teacher: {
             type: Schema.Types.ObjectId,
