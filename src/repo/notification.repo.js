@@ -18,7 +18,7 @@ class NotificationRepo {
     }
 
     static async getNotificationsByFilter(filter = {}, options = {}) {
-        const query = notiModel.find(filter).select(this.prototype.selectFields);
+        const query = notiModel.find(filter).select(this.prototype.selectFields).sort({ createdAt: -1 });
 
         if (options.populateSender) {
             query.populate("noti_senderId", "name email");
